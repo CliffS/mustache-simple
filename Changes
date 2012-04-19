@@ -1,0 +1,6 @@
+Revision history for Perl extension Mustache::Simple.
+
+0.01  Thu Apr 19 16:46:23 2012
+	- original version; created by h2xs 1.23 with options
+		-AX Mustache::Simple
+
