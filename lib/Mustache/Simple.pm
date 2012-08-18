@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.10.0;
 
-use version 0.77; our $VERSION = qv(v0.9.0);
+use version 0.77; our $VERSION = qv(v0.9.4);
 
 use File::Spec;
 
@@ -230,6 +230,7 @@ sub match_template
 	    push @tags, \%tag;		# put the tag into the array
 	}
     }
+    return \@tags, $template if (@tags == 0);	# no tags, it's all afters
     for (1 .. $#tags)
     {					# lose a leading LF after sections
 	$tags[$_]->{pre} =~ s/^\n// if $tags[$_ - 1]->{type} =~ m{^[#/^]$};
@@ -278,8 +279,9 @@ sub resolve
 		    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
 		    $result .= /^[{&]$/ ? $txt : escape $txt;
 		}
-		else {
-		    croak "Undefined $tag->{txt}" if $self->throw;
+		elsif(!exists $context->{$tag->{txt}})
+		{
+		    croak qq(No context for "$tag->{txt}") if $self->throw;
 		}
 	    }
 	    when('#') {				# it's a section start
@@ -420,6 +422,11 @@ sub AUTOLOAD
     return $self->{$name};
 }
 
+# Prevent it being caught by AUTOLOAD
+sub DESTROY
+{
+}
+
 =head2 Instance methods
 
 =over
@@ -447,7 +454,7 @@ sub read_file($)
     $file =~ s/(\.$extension)?$/.$extension/;
     $file = File::Spec->catfile($self->path, $file);
     local $/;
-    open my $hand, "<:utf8", $file or return undef;
+    open my $hand, "<:utf8", $file or croak "Can't open $file: $!";
     <$hand>;
 }
 
