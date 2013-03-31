@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.10.0;
 
-use version 0.77; our $VERSION = qv(v0.9.4);
+use version 0.77; our $VERSION = qv(v0.9.5);
 
 use File::Spec;
 
@@ -274,7 +274,7 @@ sub resolve
 	{
 	    when(m{[!/]}) { break; }		# it's a comment - skip
 	    when(/^[{&]?$/) {			# it's a variable
-		if ($txt)
+		if (defined $txt)
 		{
 		    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
 		    $result .= /^[{&]$/ ? $txt : escape $txt;
