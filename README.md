@@ -141,13 +141,13 @@ the current value.
 
 - render()
 
-        my $context = {
-    	"name" => "Chris",
-    	"value" => 10000,
-    	"taxed_value" => 10000 - (10000 * 0.4),
-    	"in_ca" => true
-        }
-        my $html = $tache->render('templatefile', $context);
+	    my $context = {
+		"name" => "Chris",
+		"value" => 10000,
+		"taxed_value" => 10000 - (10000 * 0.4),
+		"in_ca" => true
+	    }
+	    my $html = $tache->render('templatefile', $context);
 
     This is the main entry-point for rendering templates.  It can be passed
     either a full template or path to a template file.  See ["read\_file"](#read\_file)
@@ -158,14 +158,14 @@ the current value.
     you may call render on the passed string and the current context will be
     remembered.  For example:
 
-        {
-    	name => "Willy",
-    	wrapped => sub {
-    	    my $text = shift;
-    	    chomp $text;
-    	    return "<b>" . $tache->render($text) . "</b>\n";
-    	}
-        }
+	    {
+		name => "Willy",
+		wrapped => sub {
+		    my $text = shift;
+		    chomp $text;
+		    return "<b>" . $tache->render($text) . "</b>\n";
+		}
+	    }
 
     Alternatively, you may pass in an entirely new context when calling
     render() from a callback.
