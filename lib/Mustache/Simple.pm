@@ -3,6 +3,7 @@ package Mustache::Simple;
 use strict;
 use warnings;
 use 5.10.0;
+use utf8;
 
 use version 0.77; our $VERSION = qv(v0.9.5);
 
@@ -12,6 +13,8 @@ use Carp;
 use Data::Dumper;
 $Data::Dumper::Useqq = 1;
 $Data::Dumper::Deparse = 1;
+
+=encoding utf8
 
 =head1 NAME
 
