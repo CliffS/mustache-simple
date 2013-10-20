@@ -5,7 +5,7 @@ use warnings;
 use 5.10.0;
 use utf8;
 
-use version 0.77; our $VERSION = qv(v0.9.5);
+use version 0.77; our $VERSION = qv(v0.9.6);
 
 use File::Spec;
 
@@ -226,7 +226,7 @@ sub match_template
 	my %tag = %+;			# pick up named parts from the regex
 	if ($tag{type} eq '=')		# change delimiters
 	{
-	    $match = tag_match(split /\s*/, $tag{txt});
+	    $match = tag_match(split /\s/, $tag{txt});
 	}
 	else {
 	    $afters = $';		# save off the rest in case it's done
