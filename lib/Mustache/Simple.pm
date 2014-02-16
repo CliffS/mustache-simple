@@ -5,7 +5,7 @@ use warnings;
 use 5.10.0;
 use utf8;
 
-use version 0.77; our $VERSION = qv(v0.9.6);
+use version 0.77; our $VERSION = qv(v0.9.7);
 
 use File::Spec;
 
@@ -24,7 +24,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 0.9.0
+This document describes Mustache::Simple version 0.9.7
 
 =head1 SYNOPSIS
 
@@ -163,7 +163,9 @@ sub reassemble(@)
 
 =item path
 
-The path from which to load templates and partials.
+The path from which to load templates and partials. This may be
+a string or a reference to an array of strings.  If it is a reference,
+each string will be searched in order.
 
 Default: '.'
 
@@ -370,6 +372,28 @@ sub top
     return $value;
 }
 
+# Given a path and a filename
+# returns the first match that exists
+sub getfile($$)
+{
+    my ($path, $filename) = @_;
+    my $fullfile;
+    if (ref $path && ref $path eq 'ARRAY')
+    {
+	foreach (@$path)
+	{
+	    $fullfile = getfile $_, $filename;
+	    last if $fullfile;
+	}
+    }
+    else {
+	$fullfile = File::Spec->catfile($path, $filename);
+	undef $fullfile unless -e $fullfile;
+    }
+    return $fullfile;
+}
+
+
 #############################################################
 ##
 ##  Public Instance Functions
@@ -392,6 +416,8 @@ the current value.
 =item path()
 
     $tache->path('/some/new/template/path');
+or
+    $tache->path([ qw{/some/new/template/path .} ]);
     my $path = $tache->path;	# defaults to '.'
 
 =item extension()
@@ -452,12 +478,13 @@ sub read_file($)
 {
     my $self = shift;
     my $file = shift;
-    return undef if $file =~ /{{/;
+    return $file if $file =~ /{{/;
     my $extension = $self->extension;
     $file =~ s/(\.$extension)?$/.$extension/;
-    $file = File::Spec->catfile($self->path, $file);
+    my $filepath = getfile $self->path, $file;
+    return $file unless $filepath;
     local $/;
-    open my $hand, "<:utf8", $file or croak "Can't open $file: $!";
+    open my $hand, "<:utf8", $filepath or croak "Can't open $filepath: $!";
     <$hand>;
 }
 
@@ -503,7 +530,7 @@ sub render
     my $self = shift;
     my ($template, $context) = @_;
     $context = $self->top unless $context;
-    $template = $self->read_file($template) || $template;
+    $template = $self->read_file($template);
     my ($tags, $tail) = $self->match_template($template);
     # print reassemble(@$tags), $tail; exit;
     my $result = $self->resolve($context, @$tags) . $tail;
