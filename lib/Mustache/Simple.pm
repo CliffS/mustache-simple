@@ -374,6 +374,7 @@ sub top
 
 # Given a path and a filename
 # returns the first match that exists
+sub getfile($$);
 sub getfile($$)
 {
     my ($path, $filename) = @_;
