@@ -5,14 +5,16 @@ use warnings;
 use 5.10.0;
 use utf8;
 
-use version 0.77; our $VERSION = qv(v0.9.7);
+# Don't forget to change the version in the pod
+our $VERSION = v1.0.0;
 
 use File::Spec;
 
 use Carp;
-use Data::Dumper;
-$Data::Dumper::Useqq = 1;
-$Data::Dumper::Deparse = 1;
+
+# use Data::Dumper;
+# $Data::Dumper::Useqq = 1;
+# $Data::Dumper::Deparse = 1;
 
 =encoding utf8
 
@@ -24,19 +26,19 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 0.9.7
+This document describes Mustache::Simple version 1.0.0
 
 =head1 SYNOPSIS
 
 A typical Mustache template:
 
-    my $template = <<EOT;
-Hello {{name}}
-You have just won ${{value}}!
-{{#in_ca}}
-Well, ${{taxed_value}}, after taxes.
-{{/in_ca}}
-EOT
+	my $template = <<EOT;
+    Hello {{name}}
+    You have just won ${{value}}!
+    {{#in_ca}}
+    Well, ${{taxed_value}}, after taxes.
+    {{/in_ca}}
+    EOT
 
 Given the following hashref:
 

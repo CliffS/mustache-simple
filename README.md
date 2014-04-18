@@ -6,19 +6,19 @@ See [http://mustache.github.com/](http://mustache.github.com/).
 
 # VERSION
 
-This document describes Mustache::Simple version 0.9.0
+This document describes Mustache::Simple version 1.0.0
 
 # SYNOPSIS
 
 A typical Mustache template:
 
-    my $template = <<EOT;
-Hello {{name}}
-You have just won ${{value}}!
-{{#in_ca}}
-Well, ${{taxed_value}}, after taxes.
-{{/in_ca}}
-EOT
+	my $template = <<EOT;
+    Hello {{name}}
+    You have just won ${{value}}!
+    {{#in_ca}}
+    Well, ${{taxed_value}}, after taxes.
+    {{/in_ca}}
+    EOT
 
 Given the following hashref:
 
@@ -75,7 +75,9 @@ the mustache demo page: [http://mustache.github.com/\#demo](http://mustache.gith
 
 - path
 
-    The path from which to load templates and partials.
+    The path from which to load templates and partials. This may be
+    a string or a reference to an array of strings.  If it is a reference,
+    each string will be searched in order.
 
     Default: '.'
 
@@ -113,6 +115,8 @@ the current value.
 - path()
 
         $tache->path('/some/new/template/path');
+    or
+        $tache->path([ qw{/some/new/template/path .} ]);
         my $path = $tache->path;	# defaults to '.'
 - extension()
 
@@ -141,13 +145,13 @@ the current value.
 
 - render()
 
-	    my $context = {
-		"name" => "Chris",
-		"value" => 10000,
-		"taxed_value" => 10000 - (10000 * 0.4),
-		"in_ca" => true
-	    }
-	    my $html = $tache->render('templatefile', $context);
+        my $context = {
+    	"name" => "Chris",
+    	"value" => 10000,
+    	"taxed_value" => 10000 - (10000 * 0.4),
+    	"in_ca" => true
+        }
+        my $html = $tache->render('templatefile', $context);
 
     This is the main entry-point for rendering templates.  It can be passed
     either a full template or path to a template file.  See ["read\_file"](#read\_file)
@@ -158,14 +162,14 @@ the current value.
     you may call render on the passed string and the current context will be
     remembered.  For example:
 
-	    {
-		name => "Willy",
-		wrapped => sub {
-		    my $text = shift;
-		    chomp $text;
-		    return "<b>" . $tache->render($text) . "</b>\n";
-		}
-	    }
+        {
+    	name => "Willy",
+    	wrapped => sub {
+    	    my $text = shift;
+    	    chomp $text;
+    	    return "<b>" . $tache->render($text) . "</b>\n";
+    	}
+        }
 
     Alternatively, you may pass in an entirely new context when calling
     render() from a callback.
