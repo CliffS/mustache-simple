@@ -12,7 +12,7 @@ This document describes Mustache::Simple version 1.0.0
 
 A typical Mustache template:
 
-	my $template = <<EOT;
+        my $template = <<EOT;
     Hello {{name}}
     You have just won ${{value}}!
     {{#in_ca}}
@@ -23,10 +23,10 @@ A typical Mustache template:
 Given the following hashref:
 
     my $context = {
-	name => "Chris",
-	value => 10000,
-	taxed_value => 10000 - (10000 * 0.4),
-	in_ca => 1
+        name => "Chris",
+        value => 10000,
+        taxed_value => 10000 - (10000 * 0.4),
+        in_ca => 1
     };
 
 Will produce the following:
@@ -38,7 +38,7 @@ Will produce the following:
 using the following code:
 
     my $tache = new Mustache::Simple(
-	throw => 1
+        throw => 1
     );
     my $output = $tache->render($template, $context);
 
@@ -117,19 +117,19 @@ the current value.
         $tache->path('/some/new/template/path');
     or
         $tache->path([ qw{/some/new/template/path .} ]);
-        my $path = $tache->path;	# defaults to '.'
+        my $path = $tache->path;        # defaults to '.'
 - extension()
 
         $tache->extension('html');
-        my $extension = $tache->extension;	# defaults to 'mustache'
+        my $extension = $tache->extension;      # defaults to 'mustache'
 - throw()
 
         $tache->throw(1);
-        my $throwing = $tache->throw;	# defaults to undef
+        my $throwing = $tache->throw;   # defaults to undef
 - partial()
 
         $tache->partial(\&resolve_partials)
-        my $partial = $tache->partial	# defaults to undef
+        my $partial = $tache->partial   # defaults to undef
 
 ## Instance methods
 
@@ -146,10 +146,10 @@ the current value.
 - render()
 
         my $context = {
-    	"name" => "Chris",
-    	"value" => 10000,
-    	"taxed_value" => 10000 - (10000 * 0.4),
-    	"in_ca" => true
+        "name" => "Chris",
+        "value" => 10000,
+        "taxed_value" => 10000 - (10000 * 0.4),
+        "in_ca" => true
         }
         my $html = $tache->render('templatefile', $context);
 
@@ -163,12 +163,12 @@ the current value.
     remembered.  For example:
 
         {
-    	name => "Willy",
-    	wrapped => sub {
-    	    my $text = shift;
-    	    chomp $text;
-    	    return "<b>" . $tache->render($text) . "</b>\n";
-    	}
+        name => "Willy",
+        wrapped => sub {
+            my $text = shift;
+            chomp $text;
+            return "<b>" . $tache->render($text) . "</b>\n";
+        }
         }
 
     Alternatively, you may pass in an entirely new context when calling
