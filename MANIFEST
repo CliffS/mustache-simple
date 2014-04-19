@@ -3,4 +3,17 @@ Makefile.PL
 MANIFEST
 README
 t/Mustache-Simple.t
+t/00-load.t
+t/boilerplate.t
+t/manifest.t
+t/Mustache-Simple.t
+t/pod-coverage.t
+t/pod.t
+t/specs/comments.yml
+t/specs/delimiters.yml
+t/specs/interpolation.yml
+t/specs/inverted.yml
+t/specs/partials.yml
+t/specs/sections.yml
+t/specs/~lambdas.yml
 lib/Mustache/Simple.pm

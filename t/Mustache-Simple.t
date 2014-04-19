@@ -45,7 +45,7 @@ foreach my $yaml (@tests)
 {
     foreach my $test (@{$yaml->{tests}})
     {
-	say STDERR "Test: $test->{name}";
+#	say STDERR "Test: $test->{name}";
 	SKIP: {
 	    foreach (@skip)
 	    {
