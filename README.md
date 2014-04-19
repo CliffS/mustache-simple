@@ -12,7 +12,7 @@ This document describes Mustache::Simple version 1.0.0
 
 A typical Mustache template:
 
-        my $template = <<EOT;
+	my $template = <<EOT;
     Hello {{name}}
     You have just won ${{value}}!
     {{#in_ca}}
@@ -23,10 +23,10 @@ A typical Mustache template:
 Given the following hashref:
 
     my $context = {
-        name => "Chris",
-        value => 10000,
-        taxed_value => 10000 - (10000 * 0.4),
-        in_ca => 1
+	name => "Chris",
+	value => 10000,
+	taxed_value => 10000 - (10000 * 0.4),
+	in_ca => 1
     };
 
 Will produce the following:
@@ -38,7 +38,7 @@ Will produce the following:
 using the following code:
 
     my $tache = new Mustache::Simple(
-        throw => 1
+	throw => 1
     );
     my $output = $tache->render($template, $context);
 
@@ -117,19 +117,19 @@ the current value.
         $tache->path('/some/new/template/path');
     or
         $tache->path([ qw{/some/new/template/path .} ]);
-        my $path = $tache->path;        # defaults to '.'
+        my $path = $tache->path;	# defaults to '.'
 - extension()
 
         $tache->extension('html');
-        my $extension = $tache->extension;      # defaults to 'mustache'
+        my $extension = $tache->extension;	# defaults to 'mustache'
 - throw()
 
         $tache->throw(1);
-        my $throwing = $tache->throw;   # defaults to undef
+        my $throwing = $tache->throw;	# defaults to undef
 - partial()
 
         $tache->partial(\&resolve_partials)
-        my $partial = $tache->partial   # defaults to undef
+        my $partial = $tache->partial	# defaults to undef
 
 ## Instance methods
 
@@ -146,10 +146,10 @@ the current value.
 - render()
 
         my $context = {
-        "name" => "Chris",
-        "value" => 10000,
-        "taxed_value" => 10000 - (10000 * 0.4),
-        "in_ca" => true
+    	"name" => "Chris",
+    	"value" => 10000,
+    	"taxed_value" => 10000 - (10000 * 0.4),
+    	"in_ca" => true
         }
         my $html = $tache->render('templatefile', $context);
 
@@ -163,16 +163,89 @@ the current value.
     remembered.  For example:
 
         {
-        name => "Willy",
-        wrapped => sub {
-            my $text = shift;
-            chomp $text;
-            return "<b>" . $tache->render($text) . "</b>\n";
-        }
+    	name => "Willy",
+    	wrapped => sub {
+    	    my $text = shift;
+    	    chomp $text;
+    	    return "<b>" . $tache->render($text) . "</b>\n";
+    	}
         }
 
     Alternatively, you may pass in an entirely new context when calling
     render() from a callback.
+
+# COMPLIANCE WITH THE STANDARD
+
+The original standard for Mustache was defined at the
+[Mustache Manual](http://mustache.github.io/mustache.5.html)
+and this version 1 of [Mustache::Simple](http://search.cpan.org/perldoc?Mustache::Simple) was designed to comply
+with just that.  Since then, the standard for Mustache seems to be
+defined by the [Mustache Spec](https://github.com/mustache/spec).
+
+The test suite on this version skips a number of tests
+in the Spec, all of which are referred to below.
+It passes all the other tests. The YAML from the Spec is built
+into the test suite.
+
+## Missing Features
+
+This version is lacking a number of features which were not in the
+original definition but which are covered in the Mustache Spec.
+Significant missing features are:
+
+- Dot Notation
+
+        {{person.name}}
+
+    should be interpreted in the same way as
+
+        {{#person}}{{{name}}}{{/person}}
+
+    Dot notation will be added in a future version.
+
+- Implicit Iterator
+
+    Similarly, `{{#list}}{{.}}{{/list}}` should iterate over the array `@list`
+    and return each item in turn.
+
+    Implicit iterators will be added in a future version.
+
+- Nested Contexts
+
+    The code
+
+        {{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
+
+    with the context
+
+        {
+            outer => {
+                inner => {
+                    two => 2
+                },
+                one => 1,
+            }
+        }
+
+    should produce `112` but, in this version, will produce `12` as the value
+    for `one` will be out of scope.
+
+    This will be changed in a future version.
+
+## Bugs
+
+- White Space
+
+    Much of the more esoteric white-space handling specified in
+    [The Mustache Spec](https://github.com/mustache/spec) is not strictly adhered to
+    in this version.  Most of this will be addressed in a future version.
+
+- Decimal Interpolation
+
+    The spec implies that the template `"{{power}} jiggawatts!"` when passed
+    `{ power: "1.210" }` should return `"1.21 jiggawatts!"`.  I believe this to
+    be wrong and simply a mistake in the YAML of the relevant tests.  Clearly
+    `{ power : 1.210 }` would have the desired effect.
 
 # EXPORTS
 
@@ -187,9 +260,17 @@ designed to be subclassed for each template.
 
 Cliff Stanford `<cliff@may.be>`
 
+# SOURCE REPOSITORY
+
+The source is maintained at a public Github repositor at
+[https://github.com/CliffS/mustache-simple](https://github.com/CliffS/mustache-simple).  Feel free to fork
+it and to help me fix some of the above issues. Please leave any
+bugs or issues on the [Issues](https://github.com/CliffS/mustache-simple/issues)
+page and I will be notified.
+
 # LICENCE AND COPYRIGHT
 
-Copyright © 2012, Cliff Stanford `<cliff@may.be>`. All rights reserved.
+Copyright © 2014, Cliff Stanford `<cpan@may.be>`. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

@@ -12,9 +12,9 @@ use File::Spec;
 
 use Carp;
 
-# use Data::Dumper;
-# $Data::Dumper::Useqq = 1;
-# $Data::Dumper::Deparse = 1;
+use Data::Dumper;
+$Data::Dumper::Useqq = 1;
+$Data::Dumper::Deparse = 1;
 
 =encoding utf8
 
@@ -109,7 +109,7 @@ sub tag_match(@)
 	    (?<type> =)   \s* (?<txt>.+?) \s* = |   # Change delimiters
 	    (?<type> {)	  \s* (?<txt>.+?) \s* } |   # Unescaped
 	    (?<type> &)	  \s* (?<txt>.+?)       |   # Unescaped
-	    (?<type> \W?) \s* (?<txt>.+?)	    # Normal tags
+	    (?<type> [#^>\/!]?) \s* (?<txt>.+?)	    # Normal tags
 	)
 	(?: \s* \Q$close\E)	    # End of tag
     /xsm;
@@ -137,6 +137,7 @@ sub reassemble(@)
     my $last = pop @tags;
     my $ans = '';
     my $_;
+    no warnings 'uninitialized';
     $ans .= "$_->{pre}$_->{tab}\{\{$_->{type}$_->{txt}\}\}" foreach (@tags);
     return $ans . $last->{pre};
 }
@@ -204,6 +205,7 @@ sub new
     my %defaults = (
 	path	    => '.',
 	extension   => 'mustache',
+	delimiters  => [qw({{ }})],
     );
     %options = (%defaults, %options);
     my $self = \%options;
@@ -222,7 +224,7 @@ sub match_template
 {
     my $self = shift;
     my $template = shift;
-    my $match = tag_match(qw({{ }}));	# start with standard delimiters
+    my $match = tag_match(@{$self->{delimiters}});	# start with standard delimiters
     my @tags;
     my $afters;
     while ($template =~ /$match/g)
@@ -230,20 +232,29 @@ sub match_template
 	my %tag = %+;			# pick up named parts from the regex
 	if ($tag{type} eq '=')		# change delimiters
 	{
-	    $match = tag_match(split /\s/, $tag{txt});
+	    my @delimiters = split /\s/, $tag{txt};
+	    $self->{delimiters} = \@delimiters;
+	    $match = tag_match(@delimiters);
 	}
-	else {
-	    $afters = $';		# save off the rest in case it's done
-	    push @tags, \%tag;		# put the tag into the array
-	}
+	$afters = $';		# save off the rest in case it's done
+	push @tags, \%tag;		# put the tag into the array
     }
     return \@tags, $template if (@tags == 0);	# no tags, it's all afters
     for (1 .. $#tags)
     {					# lose a leading LF after sections
-	$tags[$_]->{pre} =~ s/^\n// if $tags[$_ - 1]->{type} =~ m{^[#/^]$};
+	$tags[$_]->{pre} =~ s/^\r?\n// if $tags[$_ - 1]->{type} =~ m{^[#/^]$};
+    }
+    if (@tags > 1)
+    {
+	$tags[1]->{pre} =~ s/^\r?\n// if $tags[0]->{type} eq '=' and $tags[0]->{pre} =~ /^\s*$/;
+    }
+    foreach(0 .. $#tags)
+    {
+	$tags[$_]->{pre} =~ s/^\r?\n// if $tags[$_]->{type} =~ m{^[!]$};
+	$tags[$_]->{pre} =~ s/\r?\n$// if $tags[$_]->{type} =~ m{^[=]$};
     }
 					# and from the trailing text
-    $afters =~ s/^\n// if $tags[$#tags]->{type} eq '/';
+    $afters =~ s/^\r?\n// if $tags[$#tags]->{type} =~ m{^[/!]$};
     return \@tags, $afters;
 }
 
@@ -270,7 +281,7 @@ sub resolve
     my $self = shift;
     my $context = shift;
     my @tags = @_;
-    croak "Context must be a hash" unless ref $context eq 'HASH';
+    croak "Context must be a hash: $context" unless ref $context eq 'HASH';
     my $result = '';
     for (my $i = 0; $i < @tags; $i++)
     {
@@ -279,10 +290,19 @@ sub resolve
 	my $txt = $context->{$tag->{txt}};	# get the entry from the context
 	given ($tag->{type})
 	{
-	    when(m{[!/]}) { break; }		# it's a comment - skip
+	    when('!') {				# it's a comment
+	    }
+	    when('/') { break; }		# it's a section end - skip
 	    when(/^[{&]?$/) {			# it's a variable
 		if (defined $txt)
 		{
+		    if (ref $txt eq 'CODE')
+		    {
+			$self->push($self->{delimiters});
+			$self->{delimiters} = [qw({{ }})];
+			$txt = $self->render(&$txt(), $context);
+			$self->{delimiters} = $self->pop;
+		    }
 		    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
 		    $result .= /^[{&]$/ ? $txt : escape $txt;
 		}
@@ -293,10 +313,18 @@ sub resolve
 	    }
 	    when('#') {				# it's a section start
 		my $j;
+		my $nested = 0;
 		for ($j = $i + 1; $j < @tags; $j++) # find the end
 		{
-		    last if ($tags[$j]->{type} eq '/' &&
-			$tag->{txt} eq $tags[$j]->{txt})
+		    if ($tag->{txt} eq $tags[$j]->{txt})
+		    {
+			$nested++, next if $tags[$j]->{type} eq '#';	# nested sections with the
+			if ($tags[$j]->{type} eq '/')			#   same name
+			{
+			    next if $nested--;
+			    last;
+			}
+		    }
 		}
 		croak 'No end tag found for {{#'.$tag->{txt}.'}}' if $j == @tags;
 		my @subtags =  @tags[$i + 1 .. $j]; # get the tags for the section
@@ -307,7 +335,7 @@ sub resolve
 		    }
 		    when ('CODE') {	# call user code which may call render()
 			$self->push($context);
-			$result .= $txt->(reassemble @subtags);
+			$result .= $self->render($txt->(reassemble @subtags), $context);
 			$self->pop;
 		    }
 		    when ('HASH') {	# use the hash as context
@@ -322,21 +350,42 @@ sub resolve
 	    }
 	    when ('^') {		    # inverse section
 		my $j;
+		my $nested = 0;
 		for ($j = $i + 1; $j < @tags; $j++)
 		{
-		    last if ($tags[$j]->{type} eq '/' &&
-			$tag->{txt} eq $tags[$j]->{txt})
+		    if ($tag->{txt} eq $tags[$j]->{txt})
+		    {
+			$nested++, next if $tags[$j]->{type} eq '^';	# nested sections with the
+			if ($tags[$j]->{type} eq '/')			#   same name
+			{
+			    next if $nested--;
+			    last;
+			}
+		    }
 		}
 		croak 'No end tag found for {{#'.$tag->{txt}.'}}' if $j == @tags;
 		my @subtags =  @tags[$i + 1 .. $j];
-		unless ($txt)		# resolve in current context
+		given (ref $txt)
 		{
-		    $result .= $self->resolve($context, @subtags);
+		    when ('ARRAY') {
+			$result .= $self->resolve($context, @subtags) if @$txt == 0;
+		    }
+		    when ('HASH') {
+			$result .= $self->resolve($context, @subtags) if keys %$txt == 0;
+		    }
+		    default {
+			$result .= $self->resolve($context, @subtags) unless $txt;
+		    }
 		}
 		$i = $j;
 	    }
 	    when ('>') {		# partial - see include_partial()
+		$self->push($self->{delimiters});
+		$self->{delimiters} = [qw({{ }})];
 		$result .= $self->include_partial($context, $tag->{txt});
+		$self->{delimiters} = $self->pop;
+	    }
+	    when ('=') {		# delimiter change
 	    }
 	    default {			# allow for future expansion
 		croak "Unknown tag type in \{\{$_$tag->{txt}}}";
@@ -380,6 +429,8 @@ sub getfile($$);
 sub getfile($$)
 {
     my ($path, $filename) = @_;
+    $filename =~ s/\r?\n$//; # not chomp $filename because of the possibility of \r\n
+    return if $filename =~ /\r?\n/;
     my $fullfile;
     if (ref $path && ref $path eq 'ARRAY')
     {
@@ -481,10 +532,11 @@ sub read_file($)
 {
     my $self = shift;
     my $file = shift;
+    return '' unless $file;
     return $file if $file =~ /{{/;
     my $extension = $self->extension;
-    $file =~ s/(\.$extension)?$/.$extension/;
-    my $filepath = getfile $self->path, $file;
+    (my $fullfile = $file) =~ s/(\.$extension)?$/.$extension/;
+    my $filepath = getfile $self->path, $fullfile;
     return $file unless $filepath;
     local $/;
     open my $hand, "<:utf8", $filepath or croak "Can't open $filepath: $!";
@@ -537,7 +589,89 @@ sub render
     my ($tags, $tail) = $self->match_template($template);
     # print reassemble(@$tags), $tail; exit;
     my $result = $self->resolve($context, @$tags) . $tail;
+    return $result;
 }
+
+=head1 COMPLIANCE WITH THE STANDARD
+
+The original standard for Mustache was defined at the
+L<Mustache Manual|http://mustache.github.io/mustache.5.html>
+and this version 1 of L<Mustache::Simple> was designed to comply
+with just that.  Since then, the standard for Mustache seems to be
+defined by the L<Mustache Spec|https://github.com/mustache/spec>.
+
+The test suite on this version skips a number of tests
+in the Spec, all of which are referred to below.
+It passes all the other tests. The YAML from the Spec is built
+into the test suite.
+
+=head2 Missing Features
+
+This version is lacking a number of features which were not in the
+original definition but which are covered in the Mustache Spec.
+Significant missing features are:
+
+=over
+
+=item Dot Notation
+
+    {{person.name}}
+
+should be interpreted in the same way as
+
+    {{#person}}{{{name}}}{{/person}}
+
+Dot notation will be added in a future version.
+
+=item Implicit Iterator
+
+Similarly, C<{{#list}}{{.}}{{/list}}> should iterate over the array C<@list>
+and return each item in turn.
+
+Implicit iterators will be added in a future version.
+
+=item Nested Contexts
+
+The code
+
+    {{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
+
+with the context
+
+    {
+        outer => {
+            inner => {
+                two => 2
+            },
+            one => 1,
+        }
+    }
+
+should produce C<112> but, in this version, will produce C<12> as the value
+for C<one> will be out of scope.
+
+This will be changed in a future version.
+
+=back
+
+=head2 Bugs
+
+=over
+
+=item White Space
+
+Much of the more esoteric white-space handling specified in
+L<The Mustache Spec|https://github.com/mustache/spec> is not strictly adhered to
+in this version.  Most of this will be addressed in a future version.
+
+=item Decimal Interpolation
+
+The spec implies that the template C<"{{power}} jiggawatts!"> when passed
+C<{ power: "1.210" }> should return C<"1.21 jiggawatts!">.  I believe this to
+be wrong and simply a mistake in the YAML of the relevant tests.  Clearly
+C<{ power : 1.210 }> would have the desired effect.
+
+=back
 
 =head1 EXPORTS
 
@@ -552,9 +686,17 @@ designed to be subclassed for each template.
 
 Cliff Stanford C<< <cliff@may.be> >>
 
+=head1 SOURCE REPOSITORY
+
+The source is maintained at a public Github repositor at
+L<https://github.com/CliffS/mustache-simple>.  Feel free to fork
+it and to help me fix some of the above issues. Please leave any
+bugs or issues on the L<Issues|https://github.com/CliffS/mustache-simple/issues>
+page and I will be notified.
+
 =head1 LICENCE AND COPYRIGHT
 
-Copyright © 2012, Cliff Stanford C<< <cliff@may.be> >>. All rights reserved.
+Copyright © 2014, Cliff Stanford C<< <cpan@may.be> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

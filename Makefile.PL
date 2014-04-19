@@ -4,9 +4,18 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'Mustache::Simple',
-    VERSION_FROM      => 'lib/Mustache/Simple.pm', # finds $VERSION
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-    ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/Mustache/Simple.pm', # retrieve abstract from module
-       AUTHOR         => 'Cliff Stanford <cliff@>') : ()),
+    AUTHOR	      => q{Cliff Stanford <cpan@may.be>},
+    VERSION_FROM      => 'lib/Mustache/Simple.pm',
+    ABSTRACT_FROM     => 'lib/Mustache/Simple.pm',
+    PL_FILES         => {},
+    MIN_PERL_VERSION => 5.10.0,
+    CONFIGURE_REQUIRES => {
+        'ExtUtils::MakeMaker' => 0,
+    },
+    BUILD_REQUIRES => {
+        'Test::More' => 0,
+    },
+    PREREQ_PM         => {
+	'File::Spec' => 0,
+    },
 );

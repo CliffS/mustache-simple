@@ -1,21 +1,21 @@
 NAME
     Mustache::Simple - A simple Mustach Renderer
 
-    See <http://mustache.github.com/>.
+    See http://mustache.github.com/.
 
 VERSION
-    This document describes Mustache::Simple version 0.9.0
+    This document describes Mustache::Simple version 1.0.0
 
 SYNOPSIS
     A typical Mustache template:
 
-        my $template = <<EOT;
-    Hello {{name}}
-    You have just won ${{value}}!
-    {{#in_ca}}
-    Well, ${{taxed_value}}, after taxes.
-    {{/in_ca}}
-    EOT
+            my $template = <<EOT;
+        Hello {{name}}
+        You have just won ${{value}}!
+        {{#in_ca}}
+        Well, ${{taxed_value}}, after taxes.
+        {{/in_ca}}
+        EOT
 
     Given the following hashref:
 
@@ -57,17 +57,19 @@ DESCRIPTION
     I wanted a simple rendering tool for Mustache that did not require any
     subclassing. It has currently been tested only against the list of
     examples on the mustache manual page:
-    <http://mustache.github.com/mustache.5.html> and the mustache demo page:
-    <http://mustache.github.com/#demo>.
+    http://mustache.github.com/mustache.5.html and the mustache demo page:
+    http://mustache.github.com/#demo.
 
 METHODS
   Creating a new Mustache::Simple object
     new
             my $tache = new Mustache::Simple(%options)
 
-   Parameters:
+    Parameters:
     path
-        The path from which to load templates and partials.
+        The path from which to load templates and partials. This may be a
+        string or a reference to an array of strings. If it is a reference,
+        each string will be searched in order.
 
         Default: '.'
 
@@ -100,6 +102,8 @@ METHODS
 
     path()
             $tache->path('/some/new/template/path');
+        or
+            $tache->path([ qw{/some/new/template/path .} ]);
             my $path = $tache->path;    # defaults to '.'
 
     extension()
@@ -119,8 +123,8 @@ METHODS
             my $template = read_file('templatefile');
 
         You will not usually need to call this directly as it's called by
-        "render" to load the file. If it is passed a string that looks like
-        a template (i.e. has {{ in it) it simply returns it. Similarly, if,
+        render to load the file. If it is passed a string that looks like a
+        template (i.e. has {{ in it) it simply returns it. Similarly, if,
         after prepending the path and adding the suffix, it cannot load the
         file, it simply returns the original string.
 
@@ -135,10 +139,10 @@ METHODS
 
         This is the main entry-point for rendering templates. It can be
         passed either a full template or path to a template file. See
-        "read_file" for details of how the file is loaded. It must also be
+        read_file for details of how the file is loaded. It must also be
         passed a hashref containing the main context.
 
-        In callbacks (sections like " {{#this}} " with a subroutine in the
+        In callbacks (sections like ` {{#this}} ' with a subroutine in the
         context), you may call render on the passed string and the current
         context will be remembered. For example:
 
@@ -154,6 +158,70 @@ METHODS
         Alternatively, you may pass in an entirely new context when calling
         render() from a callback.
 
+COMPLIANCE WITH THE STANDARD
+    The original standard for Mustache was defined at the Mustache Manual
+    and this version 1 of Mustache::Simple was designed to comply with just
+    that. Since then, the standard for Mustache seems to be defined by the
+    Mustache Spec.
+
+    The test suite on this version skips a number of tests in the Spec, all
+    of which are referred to below. It passes all the other tests. The YAML
+    from the Spec is built into the test suite.
+
+  Missing Features
+    This version is lacking a number of features which were not in the
+    original definition but which are covered in the Mustache Spec.
+    Significant missing features are:
+
+    Dot Notation
+            {{person.name}}
+
+        should be interpreted in the same way as
+
+            {{#person}}{{{name}}}{{/person}}
+
+        Dot notation will be added in a future version.
+
+    Implicit Iterator
+        Similarly, `{{#list}}{{.}}{{/list}}' should iterate over the array
+        `@list' and return each item in turn.
+
+        Implicit iterators will be added in a future version.
+
+    Nested Contexts
+        The code
+
+            {{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
+
+        with the context
+
+            {
+                outer => {
+                    inner => {
+                        two => 2
+                    },
+                    one => 1,
+                }
+            }
+
+        should produce `112' but, in this version, will produce `12' as the
+        value for `one' will be out of scope.
+
+        This will be changed in a future version.
+
+  Bugs
+    White Space
+        Much of the more esoteric white-space handling specified in The
+        Mustache Spec is not strictly adhered to in this version. Most of
+        this will be addressed in a future version.
+
+    Decimal Interpolation
+        The spec implies that the template `"{{power}} jiggawatts!"' when
+        passed `{ power: "1.210" }' should return `"1.21 jiggawatts!"'. I
+        believe this to be wrong and simply a mistake in the YAML of the
+        relevant tests. Clearly `{ power : 1.210 }' would have the desired
+        effect.
+
 EXPORTS
     Nothing.
 
@@ -162,10 +230,16 @@ SEE ALSO
     subclassed for each template.
 
 AUTHOR INFORMATION
-    Cliff Stanford "<cliff@may.be>"
+    Cliff Stanford `<cliff@may.be>'
+
+SOURCE REPOSITORY
+    The source is maintained at a public Github repositor at
+    https://github.com/CliffS/mustache-simple. Feel free to fork it and to
+    help me fix some of the above issues. Please leave any bugs or issues on
+    the Issues page and I will be notified.
 
 LICENCE AND COPYRIGHT
-    Copyright © 2012, Cliff Stanford "<cliff@may.be>". All rights reserved.
+    Copyright © 2014, Cliff Stanford `<cpan@may.be>'. All rights reserved.
 
     This module is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
