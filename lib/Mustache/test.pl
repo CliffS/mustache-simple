@@ -14,10 +14,12 @@ my $yaml = LoadFile('/home/cliff/src/git/mustache-simple/t/specs/sections.yml');
 #my $yaml = LoadFile('/home/cliff/src/git/mustache-simple/t/specs/inverted.yml');
 #my $yaml = LoadFile('/home/cliff/src/git/mustache-simple/t/specs/interpolation.yml');
 
+# print Dumper $yaml; exit;
+
 foreach my $test (@{$yaml->{tests}})
 {
     next if $test->{name} =~ /Decimal Interpolation/;
-    next if $test->{name} =~ /Implicit Iterator/;
+    next unless $test->{name} =~ /Implicit Iterator/;
     say $test->{name};
     my $mus = new Mustache::Simple;
     my $result = $mus->render($test->{template}, $test->{data});

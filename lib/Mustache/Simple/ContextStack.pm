@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use 5.10.0;
 
+our $VERSION = v1.1.0;
+
 use Carp;
 our @CARP_NOT = qw(Mustache::Simple);
 
@@ -18,7 +20,6 @@ sub push
 {
     my $self = shift;
     my $context = shift;
-    croak qq(Context must be a hash: "$context") unless ref $context eq 'HASH';
     push @$self, $context;
 }
 
@@ -36,9 +37,16 @@ sub search
     for (my $i = $#$self; $i >= 0; $i--)
     {
 	my $context = $self->[$i];
+	next unless ref $context eq 'HASH';
 	return $context->{$element} if exists $context->{$element};
     }
     return undef;
+}
+
+sub top
+{
+    my $self = shift;
+    return $self->[$#$self];
 }
 
 1;

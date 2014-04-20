@@ -6,7 +6,7 @@ use 5.10.0;
 use utf8;
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.0.0;
+our $VERSION = v1.2.0;
 
 use File::Spec;
 use Mustache::Simple::ContextStack;
@@ -27,7 +27,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 1.0.0
+This document describes Mustache::Simple version 1.2.0
 
 =head1 SYNOPSIS
 
@@ -306,15 +306,18 @@ sub resolve
 	    when('/') { break; }		# it's a section end - skip
 	    when('=') { break; }		# delimiter change
 	    when(/^([{&])?$/) {			# it's a variable
-		if ($tag->{txt} =~ /\./)
+		my $txt;
+		if ($tag->{txt} eq '.')
+		{
+		    $txt = $self->{stack}->top;
+		}
+		elsif ($tag->{txt} =~ /\./)
 		{
 		    my @dots = dottags $tag->{txt};
-		    my $txt = $self->resolve(undef, @dots);
-		    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
-		    $result .= $tag->{type} ? $txt : escape $txt;
+		    $txt = $self->resolve(undef, @dots);
 		}
 		else {
-		    my $txt = $self->find($tag->{txt});	# get the entry from the context
+		    $txt = $self->find($tag->{txt});	# get the entry from the context
 		    if (defined $txt)
 		    {
 			if (ref $txt eq 'CODE')
@@ -324,14 +327,14 @@ sub resolve
 			    $txt = $self->render(&$txt());
 			    $self->{delimiters} = $saved;
 			}
-			$txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
-			$result .= $tag->{type} ? $txt : escape $txt;
 		    }
-		    elsif(not defined $txt)
-		    {
+		    else {
 			croak qq(No context for "$tag->{txt}") if $self->throw;
+			$txt = '';
 		    }
 		}
+		$txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
+		$result .= $tag->{type} ? $txt : escape $txt;
 	    }
 	    when('#') {				# it's a section start
 		my $j;
@@ -632,45 +635,18 @@ sub render
 
 The original standard for Mustache was defined at the
 L<Mustache Manual|http://mustache.github.io/mustache.5.html>
-and this version 1 of L<Mustache::Simple> was designed to comply
+and this version of L<Mustache::Simple> was designed to comply
 with just that.  Since then, the standard for Mustache seems to be
 defined by the L<Mustache Spec|https://github.com/mustache/spec>.
 
 The test suite on this version skips a number of tests
-in the Spec, all of which are referred to below.
+in the Spec, all of which relate to Decimals or White Space.
 It passes all the other tests. The YAML from the Spec is built
 into the test suite.
 
-=head2 Missing Features
+=head1 BUGS
 
-This version is lacking a number of features which were not in the
-original definition but which are covered in the Mustache Spec.
-Significant missing features are:
-
-=over
-
-=item Dot Notation
-
-    {{person.name}}
-
-should be interpreted in the same way as
-
-    {{#person}}{{{name}}}{{/person}}
-
-Dot notation will be added in a future version.
-
-=item Implicit Iterator
-
-Similarly, C<{{#list}}{{.}}{{/list}}> should iterate over the array C<@list>
-and return each item in turn.
-
-Implicit iterators will be added in a future version.
-
-=back
-
-=head2 Bugs
-
-=over
+sover
 
 =item White Space
 
@@ -682,8 +658,10 @@ in this version.  Most of this will be addressed in a future version.
 
 The spec implies that the template C<"{{power}} jiggawatts!"> when passed
 C<{ power: "1.210" }> should return C<"1.21 jiggawatts!">.  I believe this to
-be wrong and simply a mistake in the YAML of the relevant tests.  Clearly
-C<{ power : 1.210 }> would have the desired effect.
+be wrong and simply a mistake in the YAML of the relevant tests or possibly
+in L<YAML::XS>. I am far from being a YAML expert.
+
+Clearly C<{ power : 1.210 }> would have the desired effect.
 
 =back
 
