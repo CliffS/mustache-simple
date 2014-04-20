@@ -79,6 +79,9 @@ a single class method, new() to obtain an object and a single instance
 method render() to convert the template and the hashref into the final
 output.
 
+As of version 1.2.0, it has support for nested contexts, for the dot notation
+and for the implicit iterator.
+
 =head2 Rationale
 
 I wanted a simple rendering tool for Mustache that did not require any
@@ -646,13 +649,35 @@ into the test suite.
 
 =head1 BUGS
 
-sover
+=over
 
 =item White Space
 
 Much of the more esoteric white-space handling specified in
 L<The Mustache Spec|https://github.com/mustache/spec> is not strictly adhered to
 in this version.  Most of this will be addressed in a future version.
+
+Because of this, the following tests from the Mustache Spec are skipped:
+
+=over
+
+=item * Indented Inline
+
+=item * Indented Inline Sections
+
+=item * Internal Whitespace
+
+=item * Standalone Indentation
+
+=item * Standalone Indented Lines
+
+=item * Standalone Line Endings
+
+=item * Standalone Without Newline
+
+=item * Standalone Without Previous Line
+
+=back
 
 =item Decimal Interpolation
 
@@ -662,6 +687,9 @@ be wrong and simply a mistake in the YAML of the relevant tests or possibly
 in L<YAML::XS>. I am far from being a YAML expert.
 
 Clearly C<{ power : 1.210 }> would have the desired effect.
+
+Because of this, all tests matching C</Decimal/> have been skipped.  We can just
+assume that Perl will do the right thing.
 
 =back
 
