@@ -1,7 +1,9 @@
 Changes
 Makefile.PL
 MANIFEST
+MANIFEST.SKIP
 README
+README.md
 t/Mustache-Simple.t
 t/00-load.t
 t/boilerplate.t
