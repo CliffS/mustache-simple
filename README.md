@@ -6,13 +6,13 @@ See [http://mustache.github.com/](http://mustache.github.com/).
 
 # VERSION
 
-This document describes Mustache::Simple version 1.0.0
+This document describes Mustache::Simple version 1.2.0
 
 # SYNOPSIS
 
 A typical Mustache template:
 
-	my $template = <<EOT;
+        my $template = <<EOT;
     Hello {{name}}
     You have just won ${{value}}!
     {{#in_ca}}
@@ -23,10 +23,10 @@ A typical Mustache template:
 Given the following hashref:
 
     my $context = {
-	name => "Chris",
-	value => 10000,
-	taxed_value => 10000 - (10000 * 0.4),
-	in_ca => 1
+        name => "Chris",
+        value => 10000,
+        taxed_value => 10000 - (10000 * 0.4),
+        in_ca => 1
     };
 
 Will produce the following:
@@ -38,7 +38,7 @@ Will produce the following:
 using the following code:
 
     my $tache = new Mustache::Simple(
-	throw => 1
+        throw => 1
     );
     my $output = $tache->render($template, $context);
 
@@ -56,12 +56,13 @@ a single class method, new() to obtain an object and a single instance
 method render() to convert the template and the hashref into the final
 output.
 
+As of version 1.2.0, it has support for nested contexts, for the dot notation
+and for the implicit iterator.
+
 ## Rationale
 
 I wanted a simple rendering tool for Mustache that did not require any
-subclassing.  It has currently been tested only against the list of examples on
-the mustache manual page: [http://mustache.github.com/mustache.5.html](http://mustache.github.com/mustache.5.html) and
-the mustache demo page: [http://mustache.github.com/\#demo](http://mustache.github.com/\#demo).
+subclassing.
 
 # METHODS
 
@@ -117,19 +118,19 @@ the current value.
         $tache->path('/some/new/template/path');
     or
         $tache->path([ qw{/some/new/template/path .} ]);
-        my $path = $tache->path;	# defaults to '.'
+        my $path = $tache->path;    # defaults to '.'
 - extension()
 
         $tache->extension('html');
-        my $extension = $tache->extension;	# defaults to 'mustache'
+        my $extension = $tache->extension;  # defaults to 'mustache'
 - throw()
 
         $tache->throw(1);
-        my $throwing = $tache->throw;	# defaults to undef
+        my $throwing = $tache->throw;       # defaults to undef
 - partial()
 
         $tache->partial(\&resolve_partials)
-        my $partial = $tache->partial	# defaults to undef
+        my $partial = $tache->partial       # defaults to undef
 
 ## Instance methods
 
@@ -146,10 +147,10 @@ the current value.
 - render()
 
         my $context = {
-    	"name" => "Chris",
-    	"value" => 10000,
-    	"taxed_value" => 10000 - (10000 * 0.4),
-    	"in_ca" => true
+            "name" => "Chris",
+            "value" => 10000,
+            "taxed_value" => 10000 - (10000 * 0.4),
+            "in_ca" => true
         }
         my $html = $tache->render('templatefile', $context);
 
@@ -163,12 +164,12 @@ the current value.
     remembered.  For example:
 
         {
-    	name => "Willy",
-    	wrapped => sub {
-    	    my $text = shift;
-    	    chomp $text;
-    	    return "<b>" . $tache->render($text) . "</b>\n";
-    	}
+            name => "Willy",
+            wrapped => sub {
+                my $text = shift;
+                chomp $text;
+                return "<b>" . $tache->render($text) . "</b>\n";
+            }
         }
 
     Alternatively, you may pass in an entirely new context when calling
@@ -178,61 +179,16 @@ the current value.
 
 The original standard for Mustache was defined at the
 [Mustache Manual](http://mustache.github.io/mustache.5.html)
-and this version 1 of [Mustache::Simple](http://search.cpan.org/perldoc?Mustache::Simple) was designed to comply
+and this version of [Mustache::Simple](http://search.cpan.org/perldoc?Mustache::Simple) was designed to comply
 with just that.  Since then, the standard for Mustache seems to be
 defined by the [Mustache Spec](https://github.com/mustache/spec).
 
 The test suite on this version skips a number of tests
-in the Spec, all of which are referred to below.
+in the Spec, all of which relate to Decimals or White Space.
 It passes all the other tests. The YAML from the Spec is built
 into the test suite.
 
-## Missing Features
-
-This version is lacking a number of features which were not in the
-original definition but which are covered in the Mustache Spec.
-Significant missing features are:
-
-- Dot Notation
-
-        {{person.name}}
-
-    should be interpreted in the same way as
-
-        {{#person}}{{{name}}}{{/person}}
-
-    Dot notation will be added in a future version.
-
-- Implicit Iterator
-
-    Similarly, `{{#list}}{{.}}{{/list}}` should iterate over the array `@list`
-    and return each item in turn.
-
-    Implicit iterators will be added in a future version.
-
-- Nested Contexts
-
-    The code
-
-        {{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
-
-    with the context
-
-        {
-            outer => {
-                inner => {
-                    two => 2
-                },
-                one => 1,
-            }
-        }
-
-    should produce `112` but, in this version, will produce `12` as the value
-    for `one` will be out of scope.
-
-    This will be changed in a future version.
-
-## Bugs
+# BUGS
 
 - White Space
 
@@ -240,12 +196,28 @@ Significant missing features are:
     [The Mustache Spec](https://github.com/mustache/spec) is not strictly adhered to
     in this version.  Most of this will be addressed in a future version.
 
+    Because of this, the following tests from the Mustache Spec are skipped:
+
+    - Indented Inline
+    - Indented Inline Sections
+    - Internal Whitespace
+    - Standalone Indentation
+    - Standalone Indented Lines
+    - Standalone Line Endings
+    - Standalone Without Newline
+    - Standalone Without Previous Line
+
 - Decimal Interpolation
 
     The spec implies that the template `"{{power}} jiggawatts!"` when passed
     `{ power: "1.210" }` should return `"1.21 jiggawatts!"`.  I believe this to
-    be wrong and simply a mistake in the YAML of the relevant tests.  Clearly
-    `{ power : 1.210 }` would have the desired effect.
+    be wrong and simply a mistake in the YAML of the relevant tests or possibly
+    in [YAML::XS](http://search.cpan.org/perldoc?YAML::XS). I am far from being a YAML expert.
+
+    Clearly `{ power : 1.210 }` would have the desired effect.
+
+    Because of this, all tests matching `/Decimal/` have been skipped.  We can just
+    assume that Perl will do the right thing.
 
 # EXPORTS
 

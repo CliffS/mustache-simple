@@ -4,7 +4,7 @@ NAME
     See http://mustache.github.com/.
 
 VERSION
-    This document describes Mustache::Simple version 1.0.0
+    This document describes Mustache::Simple version 1.2.0
 
 SYNOPSIS
     A typical Mustache template:
@@ -53,12 +53,12 @@ DESCRIPTION
     method render() to convert the template and the hashref into the final
     output.
 
+    As of version 1.2.0, it has support for nested contexts, for the dot
+    notation and for the implicit iterator.
+
   Rationale
     I wanted a simple rendering tool for Mustache that did not require any
-    subclassing. It has currently been tested only against the list of
-    examples on the mustache manual page:
-    http://mustache.github.com/mustache.5.html and the mustache demo page:
-    http://mustache.github.com/#demo.
+    subclassing.
 
 METHODS
   Creating a new Mustache::Simple object
@@ -160,67 +160,43 @@ METHODS
 
 COMPLIANCE WITH THE STANDARD
     The original standard for Mustache was defined at the Mustache Manual
-    and this version 1 of Mustache::Simple was designed to comply with just
+    and this version of Mustache::Simple was designed to comply with just
     that. Since then, the standard for Mustache seems to be defined by the
     Mustache Spec.
 
     The test suite on this version skips a number of tests in the Spec, all
-    of which are referred to below. It passes all the other tests. The YAML
-    from the Spec is built into the test suite.
+    of which relate to Decimals or White Space. It passes all the other
+    tests. The YAML from the Spec is built into the test suite.
 
-  Missing Features
-    This version is lacking a number of features which were not in the
-    original definition but which are covered in the Mustache Spec.
-    Significant missing features are:
-
-    Dot Notation
-            {{person.name}}
-
-        should be interpreted in the same way as
-
-            {{#person}}{{{name}}}{{/person}}
-
-        Dot notation will be added in a future version.
-
-    Implicit Iterator
-        Similarly, `{{#list}}{{.}}{{/list}}' should iterate over the array
-        `@list' and return each item in turn.
-
-        Implicit iterators will be added in a future version.
-
-    Nested Contexts
-        The code
-
-            {{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
-
-        with the context
-
-            {
-                outer => {
-                    inner => {
-                        two => 2
-                    },
-                    one => 1,
-                }
-            }
-
-        should produce `112' but, in this version, will produce `12' as the
-        value for `one' will be out of scope.
-
-        This will be changed in a future version.
-
-  Bugs
+BUGS
     White Space
         Much of the more esoteric white-space handling specified in The
         Mustache Spec is not strictly adhered to in this version. Most of
         this will be addressed in a future version.
 
+        Because of this, the following tests from the Mustache Spec are
+        skipped:
+
+        * Indented Inline
+        * Indented Inline Sections
+        * Internal Whitespace
+        * Standalone Indentation
+        * Standalone Indented Lines
+        * Standalone Line Endings
+        * Standalone Without Newline
+        * Standalone Without Previous Line
+
     Decimal Interpolation
         The spec implies that the template `"{{power}} jiggawatts!"' when
         passed `{ power: "1.210" }' should return `"1.21 jiggawatts!"'. I
         believe this to be wrong and simply a mistake in the YAML of the
-        relevant tests. Clearly `{ power : 1.210 }' would have the desired
-        effect.
+        relevant tests or possibly in YAML::XS. I am far from being a YAML
+        expert.
+
+        Clearly `{ power : 1.210 }' would have the desired effect.
+
+        Because of this, all tests matching `/Decimal/' have been skipped.
+        We can just assume that Perl will do the right thing.
 
 EXPORTS
     Nothing.
