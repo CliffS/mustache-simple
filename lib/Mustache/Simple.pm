@@ -82,9 +82,7 @@ output.
 =head2 Rationale
 
 I wanted a simple rendering tool for Mustache that did not require any
-subclassing.  It has currently been tested only against the list of examples on
-the mustache manual page: L<http://mustache.github.com/mustache.5.html> and
-the mustache demo page: L<http://mustache.github.com/#demo>.
+subclassing.
 
 =cut
 
@@ -625,28 +623,6 @@ Similarly, C<{{#list}}{{.}}{{/list}}> should iterate over the array C<@list>
 and return each item in turn.
 
 Implicit iterators will be added in a future version.
-
-=item Nested Contexts
-
-The code
-
-    {{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
-
-with the context
-
-    {
-        outer => {
-            inner => {
-                two => 2
-            },
-            one => 1,
-        }
-    }
-
-should produce C<112> but, in this version, will produce C<12> as the value
-for C<one> will be out of scope.
-
-This will be changed in a future version.
 
 =back
 

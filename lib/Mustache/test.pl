@@ -53,5 +53,17 @@ my $template1 = <<EOT;
 ]
 EOT
 
+my $template2 = q(
+{{#outer}}{{one}}{{#inner}}{{one}}{{two}}{{/inner}}{{/outer}}
+);
+my $data2 = {
+    outer => {
+	inner => {
+	    two => 2
+	},
+	one => 1,
+    }
+};
+
 my $mus = new Mustache::Simple;
-print $mus->render($template, $data);
+say $mus->render($template2, $data2);
