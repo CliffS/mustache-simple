@@ -13,9 +13,9 @@ use Mustache::Simple::ContextStack;
 
 use Carp;
 
-use Data::Dumper;
-$Data::Dumper::Useqq = 1;
-$Data::Dumper::Deparse = 1;
+#use Data::Dumper;
+#$Data::Dumper::Useqq = 1;
+#$Data::Dumper::Deparse = 1;
 
 =encoding utf8
 
