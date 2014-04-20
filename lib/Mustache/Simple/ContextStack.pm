@@ -5,6 +5,7 @@ use warnings;
 use 5.10.0;
 
 use Carp;
+our @CARP_NOT = qw(Mustache::Simple);
 
 sub new
 {
@@ -17,7 +18,7 @@ sub push
 {
     my $self = shift;
     my $context = shift;
-    croak "Context must be a hash: $context" unless ref $context eq 'HASH';
+    croak qq(Context must be a hash: "$context") unless ref $context eq 'HASH';
     push @$self, $context;
 }
 

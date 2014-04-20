@@ -22,16 +22,17 @@ plan tests => 1;
     pod_coverage_ok('Mustache::Simple',
 	{
 	    also_private => [
-		qr/escape/,
-		qr/getfile/,
-		qr/include_partial/,
-		qr/match_template/,
-		qr/pop/,
-		qr/push/,
-		qr/reassemble/,
-		qr/resolve/,
-		qr/tag_match/,
-		qr/find/,
+		qr/^dottags$/,
+		qr/^escape$/,
+		qr/^getfile$/,
+		qr/^include_partial$/,
+		qr/^match_template$/,
+		qr/^pop$/,
+		qr/^push$/,
+		qr/^reassemble$/,
+		qr/^resolve$/,
+		qr/^tag_match$/,
+		qr/^find$/,
 	    ],
 	    trustme => [ ]
 	}

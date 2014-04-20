@@ -34,6 +34,7 @@ my @skip = (
     'Indented Inline Sections',
     'Standalone Line Endings',
     'Standalone Indentation',
+    'Standalone Indented Lines',
     qr/^Implicit Iterator/,
 
 );
