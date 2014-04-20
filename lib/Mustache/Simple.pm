@@ -286,106 +286,135 @@ sub resolve
     {
 	my $tag  = $tags[$i];			# the current tag
 	$result .= $tag->{pre};			# add in the intervening text
-	my $txt = $self->find($tag->{txt});	# get the entry from the context
-	given ($tag->{type})
+	if ($tag->{txt} =~ /\./)
 	{
-	    when('!') {				# it's a comment
-	    }
-	    when('/') { break; }		# it's a section end - skip
-	    when(/^[{&]?$/) {			# it's a variable
-		if (defined $txt)
+#	    print Dumper $tag; exit;
+	    my @dots = $tag->{txt} =~ /(.*?)\.(.*)/;
+	    my @temptags = (
 		{
-		    if (ref $txt eq 'CODE')
-		    {
-			my $saved = $self->{delimiters};
-			$self->{delimiters} = [qw({{ }})];
-			$txt = $self->render(&$txt());
-			$self->{delimiters} = $saved;
-		    }
-		    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
-		    $result .= /^[{&]$/ ? $txt : escape $txt;
+		    pre => '',
+		    type => '#',
+		    txt => $dots[0],
+		},
+		{
+		    pre => '',
+		    type => '',
+		    txt => $dots[1],
+		},
+		{
+		    pre => '',
+		    type => '/',
+		    txt => $dots[0],
+		},
+	    );
+	    my $txt = $self->resolve(undef, @temptags);
+	    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
+	    say "TYPE = $tag->{type}";
+	    $result .= $tag->{type} ? $txt : escape $txt;
+	}
+	else {
+	    my $txt = $self->find($tag->{txt});	# get the entry from the context
+	    given ($tag->{type})
+	    {
+		when('!') {				# it's a comment
 		}
-		elsif(not defined $txt)
-		{
-		    croak qq(No context for "$tag->{txt}") if $self->throw;
-		}
-	    }
-	    when('#') {				# it's a section start
-		my $j;
-		my $nested = 0;
-		for ($j = $i + 1; $j < @tags; $j++) # find the end
-		{
-		    if ($tag->{txt} eq $tags[$j]->{txt})
+		when('/') { break; }		# it's a section end - skip
+		when(/^([{&])?$/) {			# it's a variable
+		    my $escape = $1;
+		    if (defined $txt)
 		    {
-			$nested++, next if $tags[$j]->{type} eq '#';	# nested sections with the
-			if ($tags[$j]->{type} eq '/')			#   same name
+			if (ref $txt eq 'CODE')
 			{
-			    next if $nested--;
-			    last;
+			    my $saved = $self->{delimiters};
+			    $self->{delimiters} = [qw({{ }})];
+			    $txt = $self->render(&$txt());
+			    $self->{delimiters} = $saved;
+			}
+			$txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
+			$result .= $escape  ? $txt : escape $txt;
+		    }
+		    elsif(not defined $txt)
+		    {
+			croak qq(No context for "$tag->{txt}") if $self->throw;
+		    }
+		}
+		when('#') {				# it's a section start
+		    my $j;
+		    my $nested = 0;
+		    for ($j = $i + 1; $j < @tags; $j++) # find the end
+		    {
+			if ($tag->{txt} eq $tags[$j]->{txt})
+			{
+			    $nested++, next if $tags[$j]->{type} eq '#';	# nested sections with the
+			    if ($tags[$j]->{type} eq '/')			#   same name
+			    {
+				next if $nested--;
+				last;
+			    }
 			}
 		    }
-		}
-		croak 'No end tag found for {{#'.$tag->{txt}.'}}' if $j == @tags;
-		my @subtags =  @tags[$i + 1 .. $j]; # get the tags for the section
-		given (ref $txt)
-		{
-		    when ('ARRAY') {	# an array of hashes (hopefully)
-			$result .= $self->resolve($_, @subtags) foreach @$txt;
-		    }
-		    when ('CODE') {	# call user code which may call render()
-			$result .= $self->render($txt->(reassemble @subtags));
-		    }
-		    when ('HASH') {	# use the hash as context
-			break unless scalar %$txt;
-			$result .= $self->resolve($txt, @subtags);
-		    }
-		    default {		# resolve the tags in current context
-			$result .= $self->resolve(undef, @subtags) if $txt;
-		    }
-		}
-		$i = $j;
-	    }
-	    when ('^') {		    # inverse section
-		my $j;
-		my $nested = 0;
-		for ($j = $i + 1; $j < @tags; $j++)
-		{
-		    if ($tag->{txt} eq $tags[$j]->{txt})
+		    croak 'No end tag found for {{#'.$tag->{txt}.'}}' if $j == @tags;
+		    my @subtags =  @tags[$i + 1 .. $j]; # get the tags for the section
+		    given (ref $txt)
 		    {
-			$nested++, next if $tags[$j]->{type} eq '^';	# nested sections with the
-			if ($tags[$j]->{type} eq '/')			#   same name
-			{
-			    next if $nested--;
-			    last;
+			when ('ARRAY') {	# an array of hashes (hopefully)
+			    $result .= $self->resolve($_, @subtags) foreach @$txt;
+			}
+			when ('CODE') {	# call user code which may call render()
+			    $result .= $self->render($txt->(reassemble @subtags));
+			}
+			when ('HASH') {	# use the hash as context
+			    break unless scalar %$txt;
+			    $result .= $self->resolve($txt, @subtags);
+			}
+			default {		# resolve the tags in current context
+			    $result .= $self->resolve(undef, @subtags) if $txt;
 			}
 		    }
+		    $i = $j;
 		}
-		croak 'No end tag found for {{#'.$tag->{txt}.'}}' if $j == @tags;
-		my @subtags =  @tags[$i + 1 .. $j];
-		given (ref $txt)
-		{
-		    when ('ARRAY') {
-			$result .= $self->resolve(undef, @subtags) if @$txt == 0;
+		when ('^') {		    # inverse section
+		    my $j;
+		    my $nested = 0;
+		    for ($j = $i + 1; $j < @tags; $j++)
+		    {
+			if ($tag->{txt} eq $tags[$j]->{txt})
+			{
+			    $nested++, next if $tags[$j]->{type} eq '^';	# nested sections with the
+			    if ($tags[$j]->{type} eq '/')			#   same name
+			    {
+				next if $nested--;
+				last;
+			    }
+			}
 		    }
-		    when ('HASH') {
-			$result .= $self->resolve(undef, @subtags) if keys %$txt == 0;
+		    croak 'No end tag found for {{#'.$tag->{txt}.'}}' if $j == @tags;
+		    my @subtags =  @tags[$i + 1 .. $j];
+		    given (ref $txt)
+		    {
+			when ('ARRAY') {
+			    $result .= $self->resolve(undef, @subtags) if @$txt == 0;
+			}
+			when ('HASH') {
+			    $result .= $self->resolve(undef, @subtags) if keys %$txt == 0;
+			}
+			default {
+			    $result .= $self->resolve(undef, @subtags) unless $txt;
+			}
 		    }
-		    default {
-			$result .= $self->resolve(undef, @subtags) unless $txt;
-		    }
+		    $i = $j;
 		}
-		$i = $j;
-	    }
-	    when ('>') {		# partial - see include_partial()
-		my $saved = $self->{delimiters};
-		$self->{delimiters} = [qw({{ }})];
-		$result .= $self->include_partial($tag->{txt});
-		$self->{delimiters} = $saved;
-	    }
-	    when ('=') {		# delimiter change
-	    }
-	    default {			# allow for future expansion
-		croak "Unknown tag type in \{\{$_$tag->{txt}}}";
+		when ('>') {		# partial - see include_partial()
+		    my $saved = $self->{delimiters};
+		    $self->{delimiters} = [qw({{ }})];
+		    $result .= $self->include_partial($tag->{txt});
+		    $self->{delimiters} = $saved;
+		}
+		when ('=') {		# delimiter change
+		}
+		default {			# allow for future expansion
+		    croak "Unknown tag type in \{\{$_$tag->{txt}}}";
+		}
 	    }
 	}
     }
