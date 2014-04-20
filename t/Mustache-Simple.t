@@ -30,7 +30,6 @@ my @skip = (
     'Standalone Without Newline',
     'Standalone Without Previous Line',
     qr{Decimal Interpolation$},
-    qr{dotted name}i,
     'Internal Whitespace',
     'Indented Inline Sections',
     'Standalone Line Endings',

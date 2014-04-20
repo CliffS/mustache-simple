@@ -288,28 +288,14 @@ sub resolve
 	$result .= $tag->{pre};			# add in the intervening text
 	if ($tag->{txt} =~ /\./)
 	{
-#	    print Dumper $tag; exit;
 	    my @dots = $tag->{txt} =~ /(.*?)\.(.*)/;
 	    my @temptags = (
-		{
-		    pre => '',
-		    type => '#',
-		    txt => $dots[0],
-		},
-		{
-		    pre => '',
-		    type => '',
-		    txt => $dots[1],
-		},
-		{
-		    pre => '',
-		    type => '/',
-		    txt => $dots[0],
-		},
+		{ pre => '', type => '#', txt => $dots[0] },
+		{ pre => '', type => '',  txt => $dots[1] },
+		{ pre => '', type => '/', txt => $dots[0] },
 	    );
 	    my $txt = $self->resolve(undef, @temptags);
 	    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
-	    say "TYPE = $tag->{type}";
 	    $result .= $tag->{type} ? $txt : escape $txt;
 	}
 	else {

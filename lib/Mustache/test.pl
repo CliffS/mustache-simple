@@ -6,10 +6,11 @@ use 5.10.0;
 
 use lib '/home/cliff/src/git/mustache-simple/lib';
 use Mustache::Simple;
-use YAML qw(LoadFile);
+use YAML::XS qw(LoadFile);
 use Data::Dumper;
-use enum qw{ false true };
+use Attribute::Boolean;
 
+#my $yaml = LoadFile('/home/cliff/src/git/mustache-simple/t/specs/inverted.yml');
 my $yaml = LoadFile('/home/cliff/src/git/mustache-simple/t/specs/interpolation.yml');
 
 foreach my $test (@{$yaml->{tests}})
@@ -21,6 +22,7 @@ foreach my $test (@{$yaml->{tests}})
     next if $result eq $test->{expected};
     say "Expected:\n$test->{expected}";
     say $result;
+    print Dumper $test->{data};
     last;
 }
 
