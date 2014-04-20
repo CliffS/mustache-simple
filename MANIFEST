@@ -19,3 +19,4 @@ t/specs/partials.yml
 t/specs/sections.yml
 t/specs/~lambdas.yml
 lib/Mustache/Simple.pm
+lib/Mustache/Simple/ContextStack.pm

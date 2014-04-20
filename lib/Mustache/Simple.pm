@@ -9,6 +9,7 @@ use utf8;
 our $VERSION = v1.0.0;
 
 use File::Spec;
+use Mustache::Simple::ContextStack;
 
 use Carp;
 
@@ -206,6 +207,7 @@ sub new
 	path	    => '.',
 	extension   => 'mustache',
 	delimiters  => [qw({{ }})],
+	stack	    => new Mustache::Simple::ContextStack,
     );
     %options = (%defaults, %options);
     my $self = \%options;
@@ -264,11 +266,10 @@ sub match_template
 sub include_partial
 {
     my $self = shift;
-    my $context = shift;
     my $tag = shift;
     my $result;
     $tag = $self->partial->($tag) if (ref $self->partial eq 'CODE');
-    $self->render($tag, $context);
+    $self->render($tag);
 }
 
 # This is the main worker function.  It builds up the result from the tags.
@@ -279,15 +280,15 @@ sub include_partial
 sub resolve
 {
     my $self = shift;
-    my $context = shift;
+    my $context = shift // {};
+    $self->push($context);
     my @tags = @_;
-    croak "Context must be a hash: $context" unless ref $context eq 'HASH';
     my $result = '';
     for (my $i = 0; $i < @tags; $i++)
     {
 	my $tag  = $tags[$i];			# the current tag
 	$result .= $tag->{pre};			# add in the intervening text
-	my $txt = $context->{$tag->{txt}};	# get the entry from the context
+	my $txt = $self->find($tag->{txt});	# get the entry from the context
 	given ($tag->{type})
 	{
 	    when('!') {				# it's a comment
@@ -298,15 +299,15 @@ sub resolve
 		{
 		    if (ref $txt eq 'CODE')
 		    {
-			$self->push($self->{delimiters});
+			my $saved = $self->{delimiters};
 			$self->{delimiters} = [qw({{ }})];
-			$txt = $self->render(&$txt(), $context);
-			$self->{delimiters} = $self->pop;
+			$txt = $self->render(&$txt());
+			$self->{delimiters} = $saved;
 		    }
 		    $txt = "$tag->{tab}$txt" if $tag->{tab};	# replace the indent
 		    $result .= /^[{&]$/ ? $txt : escape $txt;
 		}
-		elsif(!exists $context->{$tag->{txt}})
+		elsif(not defined $txt)
 		{
 		    croak qq(No context for "$tag->{txt}") if $self->throw;
 		}
@@ -334,16 +335,14 @@ sub resolve
 			$result .= $self->resolve($_, @subtags) foreach @$txt;
 		    }
 		    when ('CODE') {	# call user code which may call render()
-			$self->push($context);
-			$result .= $self->render($txt->(reassemble @subtags), $context);
-			$self->pop;
+			$result .= $self->render($txt->(reassemble @subtags));
 		    }
 		    when ('HASH') {	# use the hash as context
 			break unless scalar %$txt;
 			$result .= $self->resolve($txt, @subtags);
 		    }
 		    default {		# resolve the tags in current context
-			$result .= $self->resolve($context, @subtags) if $txt;
+			$result .= $self->resolve(undef, @subtags) if $txt;
 		    }
 		}
 		$i = $j;
@@ -368,22 +367,22 @@ sub resolve
 		given (ref $txt)
 		{
 		    when ('ARRAY') {
-			$result .= $self->resolve($context, @subtags) if @$txt == 0;
+			$result .= $self->resolve(undef, @subtags) if @$txt == 0;
 		    }
 		    when ('HASH') {
-			$result .= $self->resolve($context, @subtags) if keys %$txt == 0;
+			$result .= $self->resolve(undef, @subtags) if keys %$txt == 0;
 		    }
 		    default {
-			$result .= $self->resolve($context, @subtags) unless $txt;
+			$result .= $self->resolve(undef, @subtags) unless $txt;
 		    }
 		}
 		$i = $j;
 	    }
 	    when ('>') {		# partial - see include_partial()
-		$self->push($self->{delimiters});
+		my $saved = $self->{delimiters};
 		$self->{delimiters} = [qw({{ }})];
-		$result .= $self->include_partial($context, $tag->{txt});
-		$self->{delimiters} = $self->pop;
+		$result .= $self->include_partial($tag->{txt});
+		$self->{delimiters} = $saved;
 	    }
 	    when ('=') {		# delimiter change
 	    }
@@ -392,35 +391,32 @@ sub resolve
 	    }
 	}
     }
+    $self->pop;
     return $result;
 }
 
-# Push something (usually a context) onto the stack
+# Push something a context onto the stack
 sub push
 {
     my $self = shift;
     my $value = shift;
-    my @stack;
-    $self->{stack} = \@stack unless $self->{stack};
-    my $stack = $self->{stack};
-    push @$stack, $value;
+    $self->{stack}->push($value);
 }
 
 # Pop the context back off the stack
 sub pop
 {
     my $self = shift;
-    my $stack = $self->{stack};
-    return pop @$stack;
+    my $value = $self->{stack}->pop;
+    return $value;
 }
 
-# Retrieve the top item from the stack
-sub top
+# Find a value on the stack
+sub find
 {
     my $self = shift;
-    my $value = $self->pop;
-    $self->push($value);
-    return $value;
+    my $value = shift;
+    return $self->{stack}->search($value);
 }
 
 # Given a path and a filename
@@ -584,7 +580,7 @@ sub render
 {
     my $self = shift;
     my ($template, $context) = @_;
-    $context = $self->top unless $context;
+    $context = {} unless $context;
     $template = $self->read_file($template);
     my ($tags, $tail) = $self->match_template($template);
     # print reassemble(@$tags), $tail; exit;

@@ -4,7 +4,9 @@ use strict;
 use warnings;
 use 5.10.0;
 
+use lib '/home/cliff/src/git/mustache-simple/lib';
 use Mustache::Simple;
+use enum qw{ false true };
 
 my $data = {
     a =>  { one =>  1 },
@@ -34,6 +36,21 @@ my $template = <<EOT;
 {{/b}}
 {{one}}
 {{/a}}
+EOT
+
+my $data1 = { section => true, data => 'I got interpolated.' };
+my $template1 = <<EOT;
+[
+{{#section}}
+{{data}}
+|data|
+{{/section}}
+
+|#section|
+{{data}}
+|data|
+|/section|
+]
 EOT
 
 my $mus = new Mustache::Simple;
