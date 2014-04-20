@@ -708,7 +708,7 @@ Cliff Stanford C<< <cliff@may.be> >>
 
 =head1 SOURCE REPOSITORY
 
-The source is maintained at a public Github repositor at
+The source is maintained at a public Github repository at
 L<https://github.com/CliffS/mustache-simple>.  Feel free to fork
 it and to help me fix some of the above issues. Please leave any
 bugs or issues on the L<Issues|https://github.com/CliffS/mustache-simple/issues>
@@ -716,7 +716,7 @@ page and I will be notified.
 
 =head1 LICENCE AND COPYRIGHT
 
-Copyright © 2014, Cliff Stanford C<< <cpan@may.be> >>. All rights reserved.
+Copyright © 2014, Cliff Stanford C<< <cliff@may.be> >>. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
