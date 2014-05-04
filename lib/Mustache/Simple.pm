@@ -6,7 +6,7 @@ use 5.10.0;
 use utf8;
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.2.0;
+our $VERSION = v1.2.1;
 
 use File::Spec;
 use Mustache::Simple::ContextStack;
@@ -27,7 +27,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 1.2.0
+This document describes Mustache::Simple version 1.2.1
 
 =head1 SYNOPSIS
 
