@@ -18,5 +18,6 @@ WriteMakefile(
     PREREQ_PM         => {
 	'File::Spec' => 0,
 	'YAML::XS'   => 0,
+	'experimental' => 0.008,
     },
 );

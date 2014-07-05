@@ -4,9 +4,10 @@ use strict;
 use warnings;
 use 5.10.0;
 use utf8;
+use experimental qw(switch);
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.2.1;
+our $VERSION = v1.2.2;
 
 use File::Spec;
 use Mustache::Simple::ContextStack;
@@ -27,7 +28,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 1.2.1
+This document describes Mustache::Simple version 1.2.2
 
 =head1 SYNOPSIS
 
@@ -134,7 +135,7 @@ sub tag_match(@)
 # Returns an escaped string
 sub escape($)
 {
-    my $_ = shift;
+    local $_ = shift;
     s/&/&amp;/g;
     s/"/&quot;/g;
     s/</&lt;/g;
@@ -150,7 +151,7 @@ sub reassemble(@)
     my @tags = @_;
     my $last = pop @tags;
     my $ans = '';
-    my $_;
+    local $_;
     no warnings 'uninitialized';
     $ans .= "$_->{pre}$_->{tab}\{\{$_->{type}$_->{txt}\}\}" foreach (@tags);
     return $ans . $last->{pre};
