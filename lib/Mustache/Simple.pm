@@ -97,13 +97,14 @@ subclassing.
 ##
 ##
 
-sub dottags($)
+sub dottags($;$)
 {
     my $tag = shift;
+    my $type = shift // '';
     my @dots = $tag =~ /(.*?)\.(.*)/;
     my @tags = (
         { pre => '', type => '#', txt => $dots[0] },
-        { pre => '', type => '',  txt => $dots[1] },
+        { pre => '', type => $type,  txt => $dots[1] },
         { pre => '', type => '/', txt => $dots[0] },
     );
     return @tags;
@@ -317,7 +318,7 @@ sub resolve
                 }
                 elsif ($tag->{txt} =~ /\./)
                 {
-                    my @dots = dottags $tag->{txt};
+                    my @dots = dottags $tag->{txt}, $tag->{type};
                     $txt = $self->resolve(undef, @dots);
                 }
                 else {
@@ -338,6 +339,7 @@ sub resolve
                     }
                 }
                 $txt = "$tag->{tab}$txt" if $tag->{tab};        # replace the indent
+		say qq(Tag Type: "$tag->{type}", txt: $txt);
                 $result .= $tag->{type} ? $txt : escape $txt;
             }
             when('#') {                         # it's a section start
