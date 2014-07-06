@@ -22,7 +22,7 @@ use Carp;
 
 =head1 NAME
 
-Mustache::Simple - A simple Mustach Renderer
+Mustache::Simple - A simple Mustache Renderer
 
 See L<http://mustache.github.com/>.
 
