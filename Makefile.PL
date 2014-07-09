@@ -8,7 +8,7 @@ WriteMakefile(
     VERSION_FROM      => 'lib/Mustache/Simple.pm',
     ABSTRACT_FROM     => 'lib/Mustache/Simple.pm',
     PL_FILES         => {},
-    MIN_PERL_VERSION => 5.10.0,
+    MIN_PERL_VERSION => 5.10.1,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
     },

@@ -2,7 +2,7 @@ package Mustache::Simple::ContextStack;
 
 use strict;
 use warnings;
-use 5.10.0;
+use 5.10.1;
 
 our $VERSION = v1.1.0;
 

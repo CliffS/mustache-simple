@@ -2,7 +2,7 @@ package Mustache::Simple;
 
 use strict;
 use warnings;
-use 5.10.0;
+use 5.10.1;
 use utf8;
 use experimental qw(switch);
 
