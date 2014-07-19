@@ -339,7 +339,6 @@ sub resolve
                     }
                 }
                 $txt = "$tag->{tab}$txt" if $tag->{tab};        # replace the indent
-		say qq(Tag Type: "$tag->{type}", txt: $txt);
                 $result .= $tag->{type} ? $txt : escape $txt;
             }
             when('#') {                         # it's a section start
