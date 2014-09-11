@@ -46,7 +46,7 @@ sub search
 sub top
 {
     my $self = shift;
-    return $self->[$#$self];
+    return $self->[-1];
 }
 
 1;
