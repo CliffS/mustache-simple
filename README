@@ -60,7 +60,8 @@ DESCRIPTION
     where the object has a method called item (as returned by
     `$object->can'), the value will be the return from the method call (with
     no parameters). If `$object->can(item)' returns `undef', the object will
-    be treated as a hash and the value looked up directly.
+    be treated as a hash and the value looked up directly. See Managing
+    Objects.
 
   Rationale
     I wanted a simple rendering tool for Mustache that did not require any
@@ -173,6 +174,56 @@ COMPLIANCE WITH THE STANDARD
     The test suite on this version skips a number of tests in the Spec, all
     of which relate to Decimals or White Space. It passes all the other
     tests. The YAML from the Spec is built into the test suite.
+
+MANAGING OBJECTS
+    If a blessed object is passed in (at any level) as the context for
+    rendering a template, Mustache::Simple will check each tag to see if it
+    can be called as a method on the object. To achieve this, it calls `can'
+    from UNIVERSAL on the object. If `$object->can(tag)', returns code, this
+    code will be called (with no parameters). Otherwise, if the object is
+    based on an underlying HASH, it will be treated as that HASH. This works
+    well for objects with AUTOLOADed "getters".
+
+    For example:
+
+        package Test::Mustache;
+
+        sub new
+        {
+            my $class = shift;
+            my %params = @_;
+            bless \%params, $class;
+        }
+
+        sub name    # Ensure the name starts with a capital
+        {
+            my $self = shift;
+            (my $name = $self->{name}) =~ s/.*/\L\u$&/;
+            return $name;
+        }
+
+        sub AUTOLOAD    # generic getter / setter
+        {
+            my $self = shift;
+            my $value = shift;
+            (my $method = our $AUTOLOAD) =~ s/.*:://;
+            $self->{$method} = $value if defined $value;
+            return $self->{$method};
+        }
+
+        sub DESTROY { }
+
+    Using the above object as `$object', `{{name}}' would call
+    `$object->can('name')' which would return a reference to the `name'
+    method and thus that method would be called as a "getter". On a call to
+    `{{address}}' `$object->can' would return undef and therefore
+    `$object->{address}' would be used.
+
+    This is usually what you want as it avoids the call to
+    `$object->AUTOLOAD' for each simple lookup. If, however, you want
+    something different to happen, you either need to declare a "Forward
+    Declaration" (see perlsub) or you need to override the object's `can'
+    (see UNIVERSAL).
 
 BUGS
     White Space
