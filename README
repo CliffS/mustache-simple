@@ -60,8 +60,8 @@ DESCRIPTION
     where the object has a method called item (as returned by
     `$object->can'), the value will be the return from the method call (with
     no parameters). If `$object->can(item)' returns `undef', the object will
-    be treated as a hash and the value looked up directly. See Managing
-    Objects.
+    be treated as a hash and the value looked up directly. See MANAGING
+    OBJECTS below.
 
   Rationale
     I wanted a simple rendering tool for Mustache that did not require any

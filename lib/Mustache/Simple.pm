@@ -87,7 +87,7 @@ As of version 1.3.0, it will accept a blessed object.  For any C<{{item}}>
 where the object has a method called item (as returned by C<< $object->can >>),
 the value will be the return from the method call (with no parameters).
 If C<< $object->can(item) >> returns C<undef>, the object will be treated
-as a hash and the value looked up directly. See L</Managing Objects>.
+as a hash and the value looked up directly. See L</MANAGING OBJECTS> below.
 
 
 =head2 Rationale
@@ -663,7 +663,8 @@ into the test suite.
 If a blessed object is passed in (at any level) as the context for
 rendering a template, L<Mustache::Simple> will check each tag to
 see if it can be called as a method on the object.  To achieve this, it
-calls C<can> from L<UNIVERSAL> on the object.  If C<< $object->can(tag) >>,
+calls C<can> from L<UNIVERSAL|http://perldoc.perl.org/UNIVERSAL.html>
+on the object.  If C<< $object->can(tag) >>,
 returns code, this code will be called (with no parameters).  Otherwise,
 if the object is based on an underlying HASH, it will be treated as that
 HASH.  This works well for objects with AUTOLOADed "getters".
@@ -706,8 +707,10 @@ used.
 
 This is usually what you want as it avoids the call to C<< $object->AUTOLOAD >>
 for each simple lookup.  If, however, you want something different to
-happen, you either need to declare a "Forward Declaration" (see L<perlsub>)
-or you need to override the object's C<can> (see L<UNIVERSAL>).
+happen, you either need to declare a "Forward Declaration"
+(see L<perlsub|http://perldoc.perl.org/perlsub.html>)
+or you need to override the object's C<can>
+(see L<UNIVERSAL|http://perldoc.perl.org/UNIVERSAL.html>).
 
 =head1 BUGS
 

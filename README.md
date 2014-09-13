@@ -63,7 +63,7 @@ As of version 1.3.0, it will accept a blessed object.  For any `{{item}}`
 where the object has a method called item (as returned by `$object->can`),
 the value will be the return from the method call (with no parameters).
 If `$object->can(item)` returns `undef`, the object will be treated
-as a hash and the value looked up directly. See ["Managing Objects"](#managing-objects).
+as a hash and the value looked up directly. See ["MANAGING OBJECTS"](#managing-objects) below.
 
 ## Rationale
 
@@ -202,7 +202,8 @@ into the test suite.
 If a blessed object is passed in (at any level) as the context for
 rendering a template, [Mustache::Simple](https://metacpan.org/pod/Mustache::Simple) will check each tag to
 see if it can be called as a method on the object.  To achieve this, it
-calls `can` from [UNIVERSAL](https://metacpan.org/pod/UNIVERSAL) on the object.  If `$object->can(tag)`,
+calls `can` from [UNIVERSAL](http://perldoc.perl.org/UNIVERSAL.html)
+on the object.  If `$object->can(tag)`,
 returns code, this code will be called (with no parameters).  Otherwise,
 if the object is based on an underlying HASH, it will be treated as that
 HASH.  This works well for objects with AUTOLOADed "getters".
@@ -245,8 +246,10 @@ used.
 
 This is usually what you want as it avoids the call to `$object->AUTOLOAD`
 for each simple lookup.  If, however, you want something different to
-happen, you either need to declare a "Forward Declaration" (see [perlsub](https://metacpan.org/pod/perlsub))
-or you need to override the object's `can` (see [UNIVERSAL](https://metacpan.org/pod/UNIVERSAL)).
+happen, you either need to declare a "Forward Declaration"
+(see [perlsub](http://perldoc.perl.org/perlsub.html))
+or you need to override the object's `can`
+(see [UNIVERSAL](http://perldoc.perl.org/UNIVERSAL.html)).
 
 # BUGS
 
