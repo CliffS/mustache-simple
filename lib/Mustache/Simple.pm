@@ -7,16 +7,16 @@ use utf8;
 use experimental qw(switch);
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.2.3;
+our $VERSION = v1.3.0;
 
 use File::Spec;
-use Mustache::Simple::ContextStack;
+use Mustache::Simple::ContextStack v1.3.0;
 
 use Carp;
 
-#use Data::Dumper;
-#$Data::Dumper::Useqq = 1;
-#$Data::Dumper::Deparse = 1;
+use Data::Dumper;
+$Data::Dumper::Useqq = 1;
+$Data::Dumper::Deparse = 1;
 
 =encoding utf8
 
@@ -28,7 +28,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 1.2.3
+This document describes Mustache::Simple version 1.3.0
 
 =head1 SYNOPSIS
 
@@ -329,7 +329,7 @@ sub resolve
                         {
                             my $saved = $self->{delimiters};
                             $self->{delimiters} = [qw({{ }})];
-                            $txt = $self->render(&$txt());
+                            $txt = $self->render($txt->());
                             $self->{delimiters} = $saved;
                         }
                     }
@@ -629,6 +629,8 @@ sub render
     my $self = shift;
     my ($template, $context) = @_;
     $context = {} unless $context;
+#    say "\$template = $template, ref \$context = ", ref $context;
+#    print Dumper $context;
     $template = $self->read_file($template);
     my ($tags, $tail) = $self->match_template($template);
     # print reassemble(@$tags), $tail; exit;

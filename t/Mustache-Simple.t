@@ -11,6 +11,10 @@ use 5.10.0;
 
 use YAML::XS qw(LoadFile);
 use Data::Dumper;
+$Data::Dumper::Deparse = 1;
+
+
+use experimental qw{smartmatch};
 
 use Test::More; # tests => 1;
 BEGIN { use_ok('Mustache::Simple') };
@@ -39,10 +43,12 @@ my @skip = (
 );
 
 
+my $count = 1;
 foreach my $yaml (@tests)
 {
     foreach my $test (@{$yaml->{tests}})
     {
+#        next unless ++$count == 120;
 #	say STDERR "Test: $test->{name}";
 	SKIP: {
 	    foreach (@skip)
@@ -58,10 +64,14 @@ foreach my $yaml (@tests)
 		);
 		my $context = $test->{data};
 		if (exists $context->{lambda}{perl})
-		{
-		    $context->{lambda} = eval $context->{lambda}{perl};
-		}
-		my $result = $mustache->render($test->{template}, $test->{data});
+                {
+                    my $sub = $context->{lambda}{perl};
+                    $context->{lambda} = sub {
+                        #    say "IN SUB: \@_ = @_";
+                        eval "$sub->(\@_);"
+                    };
+                }
+		my $result = $mustache->render($test->{template}, $context);
 		is($result, $test->{expected}, $test->{desc});
 	    };
 	    fail($test->{name} . ": $@") if $@;
