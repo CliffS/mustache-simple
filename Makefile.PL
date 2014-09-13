@@ -14,10 +14,14 @@ WriteMakefile(
     },
     BUILD_REQUIRES => {
         'Test::More' => 0,
+        'YAML::XS'    => 0,
+        'Data::Dumper' => 0,
     },
     PREREQ_PM         => {
 	'File::Spec' => 0,
+        'Scalar::Util' => 0,
 	'YAML::XS'   => 0,
 	'experimental' => 0.008,
+        Carp        => 0,
     },
 );

@@ -1,10 +1,10 @@
 NAME
-    Mustache::Simple - A simple Mustach Renderer
+    Mustache::Simple - A simple Mustache Renderer
 
     See http://mustache.github.com/.
 
 VERSION
-    This document describes Mustache::Simple version 1.2.0
+    This document describes Mustache::Simple version 1.3.0
 
 SYNOPSIS
     A typical Mustache template:
@@ -55,6 +55,12 @@ DESCRIPTION
 
     As of version 1.2.0, it has support for nested contexts, for the dot
     notation and for the implicit iterator.
+
+    As of version 1.3.0, it will accept a blessed object. For any `{{item}}'
+    where the object has a method called item (as returned by
+    `$object->can'), the value will be the return from the method call (with
+    no parameters). If `$object->can(item)' returns `undef', the object will
+    be treated as a hash and the value looked up directly.
 
   Rationale
     I wanted a simple rendering tool for Mustache that did not require any

@@ -14,9 +14,9 @@ use Mustache::Simple::ContextStack v1.3.0;
 
 use Carp;
 
-use Data::Dumper;
-$Data::Dumper::Useqq = 1;
-$Data::Dumper::Deparse = 1;
+#use Data::Dumper;
+#$Data::Dumper::Useqq = 1;
+#$Data::Dumper::Deparse = 1;
 
 =encoding utf8
 
@@ -82,6 +82,12 @@ output.
 
 As of version 1.2.0, it has support for nested contexts, for the dot notation
 and for the implicit iterator.
+
+As of version 1.3.0, it will accept a blessed object.  For any C<{{item}}>
+where the object has a method called item (as returned by C<< $object->can >>),
+the value will be the return from the method call (with no parameters).
+If C<< $object->can(item) >> returns C<undef>, the object will be treated
+as a hash and the value looked up directly.
 
 =head2 Rationale
 
