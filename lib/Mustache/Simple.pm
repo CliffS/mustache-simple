@@ -87,7 +87,8 @@ As of version 1.3.0, it will accept a blessed object.  For any C<{{item}}>
 where the object has a method called item (as returned by C<< $object->can >>),
 the value will be the return from the method call (with no parameters).
 If C<< $object->can(item) >> returns C<undef>, the object will be treated
-as a hash and the value looked up directly.
+as a hash and the value looked up directly. See L</Managing Objects>.
+
 
 =head2 Rationale
 
@@ -656,6 +657,57 @@ The test suite on this version skips a number of tests
 in the Spec, all of which relate to Decimals or White Space.
 It passes all the other tests. The YAML from the Spec is built
 into the test suite.
+
+=head1 MANAGING OBJECTS
+
+If a blessed object is passed in (at any level) as the context for
+rendering a template, L<Mustache::Simple> will check each tag to
+see if it can be called as a method on the object.  To achieve this, it
+calls C<can> from L<UNIVERSAL> on the object.  If C<< $object->can(tag) >>,
+returns code, this code will be called (with no parameters).  Otherwise,
+if the object is based on an underlying HASH, it will be treated as that
+HASH.  This works well for objects with AUTOLOADed "getters".
+
+For example:
+
+    package Test::Mustache;
+
+    sub new
+    {
+        my $class = shift;
+        my %params = @_;
+        bless \%params, $class;
+    }
+
+    sub name    # Ensure the name starts with a capital
+    {
+        my $self = shift;
+        (my $name = $self->{name}) =~ s/.*/\L\u$&/;
+        return $name;
+    }
+
+    sub AUTOLOAD    # generic getter / setter
+    {
+        my $self = shift;
+        my $value = shift;
+        (my $method = our $AUTOLOAD) =~ s/.*:://;
+        $self->{$method} = $value if defined $value;
+        return $self->{$method};
+    }
+
+    sub DESTROY { }
+
+Using the above object as C<$object>, C<{{name}}> would call
+C<< $object->can('name') >> which would return a reference to
+the C<name> method and thus that method would be called as a
+"getter".  On a call to C<{{address}}> C<< $object->can >> would
+return undef and therefore C<< $object->{address} >> would be
+used.
+
+This is usually what you want as it avoids the call to C<< $object->AUTOLOAD >>
+for each simple lookup.  If, however, you want something different to
+happen, you either need to declare a "Forward Declaration" (see L<perlsub>)
+or you need to override the object's C<can> (see L<UNIVERSAL>).
 
 =head1 BUGS
 
