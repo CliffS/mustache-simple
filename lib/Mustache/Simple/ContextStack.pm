@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use 5.10.1;
 
-our $VERSION = v1.3.0;
+our $VERSION = v1.3.1;
 
 use Scalar::Util qw(blessed reftype);
 use Carp;
@@ -13,6 +13,18 @@ our @CARP_NOT = qw(Mustache::Simple);
 #use Data::Dumper;
 #$Data::Dumper::Useqq = 1;
 #$Data::Dumper::Deparse = 1;
+#
+#use Data::Dump qw(dumpf);
+#
+#sub debug($)
+#{
+#    say dumpf(shift, sub {
+#            my ($ctx, $ref) = @_;
+#            return { dump => qq(<$ref>) } if $ctx->object_isa('DateTime');
+#        }
+#    );
+#    say "-" x 50;
+#}
 
 sub new
 {

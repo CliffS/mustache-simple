@@ -203,7 +203,7 @@ If a blessed object is passed in (at any level) as the context for
 rendering a template, [Mustache::Simple](https://metacpan.org/pod/Mustache::Simple) will check each tag to
 see if it can be called as a method on the object.  To achieve this, it
 calls `can` from [UNIVERSAL](http://perldoc.perl.org/UNIVERSAL.html)
-on the object.  If `$object->can(tag)`,
+on the object.  If `$object->can(tag)`
 returns code, this code will be called (with no parameters).  Otherwise,
 if the object is based on an underlying HASH, it will be treated as that
 HASH.  This works well for objects with AUTOLOADed "getters".
@@ -240,7 +240,7 @@ For example:
 Using the above object as `$object`, `{{name}}` would call
 `$object->can('name')` which would return a reference to
 the `name` method and thus that method would be called as a
-"getter".  On a call to `{{address}}` `$object->can` would
+"getter".  On a call to `{{address}}`, `$object->can` would
 return undef and therefore `$object->{address}` would be
 used.
 

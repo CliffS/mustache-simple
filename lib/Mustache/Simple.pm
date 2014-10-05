@@ -7,10 +7,11 @@ use utf8;
 use experimental qw(switch);
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.3.0;
+our $VERSION = v1.3.1;
 
 use File::Spec;
-use Mustache::Simple::ContextStack v1.3.0;
+use Mustache::Simple::ContextStack v1.3.1;
+use Scalar::Util qw( reftype );
 
 use Carp;
 
@@ -34,7 +35,7 @@ This document describes Mustache::Simple version 1.3.0
 
 A typical Mustache template:
 
-        my $template = <<EOT;
+    my $template = <<EOT;
     Hello {{name}}
     You have just won ${{value}}!
     {{#in_ca}}
@@ -374,7 +375,7 @@ sub resolve
                 else {
                     $txt = $self->find($tag->{txt});    # get the entry from the context
                 }
-                given (ref $txt)
+                given (reftype $txt)
                 {
                     when ('ARRAY') {    # an array of hashes (hopefully)
                         $result .= $self->resolve($_, @subtags) foreach @$txt;
@@ -419,7 +420,7 @@ sub resolve
                     $txt = $self->find($tag->{txt});    # get the entry from the context
                 }
                 my $ans = '';
-                given (ref $txt)
+                given (reftype $txt)
                 {
                     when ('ARRAY') {
                         $ans = $self->resolve(undef, @subtags) if @$txt == 0;
@@ -664,7 +665,7 @@ If a blessed object is passed in (at any level) as the context for
 rendering a template, L<Mustache::Simple> will check each tag to
 see if it can be called as a method on the object.  To achieve this, it
 calls C<can> from L<UNIVERSAL|http://perldoc.perl.org/UNIVERSAL.html>
-on the object.  If C<< $object->can(tag) >>,
+on the object.  If C<< $object->can(tag) >>
 returns code, this code will be called (with no parameters).  Otherwise,
 if the object is based on an underlying HASH, it will be treated as that
 HASH.  This works well for objects with AUTOLOADed "getters".
@@ -701,7 +702,7 @@ For example:
 Using the above object as C<$object>, C<{{name}}> would call
 C<< $object->can('name') >> which would return a reference to
 the C<name> method and thus that method would be called as a
-"getter".  On a call to C<{{address}}> C<< $object->can >> would
+"getter".  On a call to C<{{address}}>, C<< $object->can >> would
 return undef and therefore C<< $object->{address} >> would be
 used.
 
