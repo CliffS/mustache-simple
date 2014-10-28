@@ -1,8 +1,7 @@
-
-
-use strict;
-use warnings;
+#!perl -T
 use 5.10.0;
+use strict;
+use warnings FATAL => 'all';
 
 use Test::More tests => 1;
 use Mustache::Simple;
