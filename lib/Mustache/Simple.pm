@@ -7,7 +7,7 @@ use utf8;
 use experimental qw(switch);
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.3.2;
+our $VERSION = v1.3.3;
 
 use File::Spec;
 use Mustache::Simple::ContextStack v1.3.1;
@@ -29,7 +29,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 1.3.2
+This document describes Mustache::Simple version 1.3.3
 
 =head1 SYNOPSIS
 
@@ -374,7 +374,6 @@ sub resolve
                 }
                 else {
                     $txt = $self->find($tag->{txt});    # get the entry from the context
-                    $txt = &$txt if ref $txt eq 'CODE';
                 }
                 given (reftype $txt)
                 {
@@ -430,7 +429,10 @@ sub resolve
                         $ans = $self->resolve(undef, @subtags) if keys %$txt == 0;
                     }
                     when ('CODE') {
-                        $ans = $self->resolve(undef, @subtags) unless &$txt;
+#                       $ans = $self->resolve(undef, @subtags) unless &$txt;
+                        # The above line is rem'd out to comply with the test:
+                        #   'Lambdas used for inverted sections should be considered truthy.'
+                        # although I'm not sure I agree with it.
                     }
                     default {
                         $ans = $self->resolve(undef, @subtags) unless $txt;
