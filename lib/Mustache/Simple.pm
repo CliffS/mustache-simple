@@ -7,7 +7,7 @@ use utf8;
 use experimental qw(switch);
 
 # Don't forget to change the version in the pod
-our $VERSION = v1.3.3;
+our $VERSION = v1.3.4;
 
 use File::Spec;
 use Mustache::Simple::ContextStack v1.3.1;
@@ -29,7 +29,7 @@ See L<http://mustache.github.com/>.
 
 =head1 VERSION
 
-This document describes Mustache::Simple version 1.3.3
+This document describes Mustache::Simple version 1.3.4
 
 =head1 SYNOPSIS
 
