@@ -591,7 +591,7 @@ sub read_file($)
     my $self = shift;
     my $file = shift;
     return '' unless $file;
-    return $file if $file =~ /{{/;
+    return $file if $file =~ /\{\{/;
     my $extension = $self->extension;
     (my $fullfile = $file) =~ s/(\.$extension)?$/.$extension/;
     my $filepath = getfile $self->path, $fullfile;
