@@ -12,7 +12,7 @@ WriteMakefile(
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
     },
-    BUILD_REQUIRES => {
+    TEST_REQUIRES => {
         'Test::More' => 0,
         'YAML::XS'    => 0,
         'Data::Dumper' => 0,
@@ -23,5 +23,6 @@ WriteMakefile(
 	'YAML::XS'   => 0,
 	'experimental' => 0.008,
         Carp        => 0,
+        version     => 0,
     },
 );

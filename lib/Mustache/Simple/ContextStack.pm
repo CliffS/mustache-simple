@@ -3,12 +3,15 @@ package Mustache::Simple::ContextStack;
 use strict;
 use warnings;
 use 5.10.1;
+use version;
 
-our $VERSION = v1.3.1;
+our $VERSION = version->declare('v1.3.5');
 
 use Scalar::Util qw(blessed reftype);
 use Carp;
 our @CARP_NOT = qw(Mustache::Simple);
+
+# Don't forget to change the version in the pod
 
 #use Data::Dumper;
 #$Data::Dumper::Useqq = 1;
